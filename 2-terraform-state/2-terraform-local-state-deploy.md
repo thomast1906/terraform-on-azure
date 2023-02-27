@@ -1,6 +1,6 @@
 # Terraform Deploy using Local State file 
 
-Review directory [local-state-example](https://github.com/thomast1906/terraform-on-azure/tree/first/2-terraform-state/local-state-example) and the Terraform configuration files.
+Review directory [local-state-example](https://github.com/thomast1906/terraform-on-azure/tree/main/2-terraform-state/local-state-example) and the Terraform configuration files.
 
 Notice the reference to terraform backend in provider.tf
 

@@ -1,11 +1,11 @@
 # Terraform Deploy using Remote State file 
 
-Review directory [remote-state-example](https://github.com/thomast1906/terraform-on-azure/tree/first/2-terraform-state/remote-state-example) and the Terraform configuration files.
+Review directory [remote-state-example](https://github.com/thomast1906/terraform-on-azure/tree/main/2-terraform-state/remote-state-example) and the Terraform configuration files.
 
 ## Create remote state storage account
 
 Create a storage account to store the remote state file.
-1. Edit the [variables](https://github.com/thomast1906/terraform-on-azure/tree/first/2-terraform-state/scripts/1-create-terraform-storage.sh#L6-L7)
+1. Edit the [variables](https://github.com/thomast1906/terraform-on-azure/tree/main/2-terraform-state/scripts/1-create-terraform-storage.sh#L6-L7)
 2. Run the script `./scripts/1-create-terraform-storage.sh`
 3. The script will create
 - Azure Resource Group
@@ -55,5 +55,5 @@ terraform destroy
 
 Run the following command to destroy the remote state storage account:
 
-1. Edit the [variables](https://github.com/thomast1906/terraform-on-azure/tree/first/2-terraform-state/scripts/2-delete-terraform-storage.sh#L6)
+1. Edit the [variables](https://github.com/thomast1906/terraform-on-azure/tree/main/2-terraform-state/scripts/2-delete-terraform-storage.sh#L6)
 2. Run the script `./scripts/2-delete-terraform-storage.sh`
