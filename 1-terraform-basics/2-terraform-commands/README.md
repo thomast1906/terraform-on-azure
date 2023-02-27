@@ -1,5 +1,3 @@
-# Terraform Installation
+# Terraform Commands
 
-The purpose of this tutorial is to setup the initial requirements to complete this lab/workshop.
-- Terraform installation
-- Visual Studio Code (Recommended)
+An introduction to the Terraform commands available, this will cover the basic commands to get you started with Terraform.
