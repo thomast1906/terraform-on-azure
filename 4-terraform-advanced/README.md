@@ -6,7 +6,6 @@ In this section we will be looking at some more advanced Terraform concepts:
 - For Each
 - Count
 - Conditional Expressions
-- Loops
 - Dynamic Blocks
 
 # Pre-requisites
