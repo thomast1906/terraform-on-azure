@@ -8,7 +8,6 @@ In this section we will be looking at some more advanced Terraform concepts:
 - Conditional Expressions
 - Loops
 - Dynamic Blocks
-- Depends On
 
 # Pre-requisites
 
