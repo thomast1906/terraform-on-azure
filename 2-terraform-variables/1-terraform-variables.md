@@ -30,15 +30,36 @@ variable "resource_group_name" {
 
 ```
 
-### Terraform Variables - example - main.tf
+### Terraform Local Variables - example
 
-As below, we are using the variable `resource_group_name` to pass the value `tamopsrg` to the resource `azurerm_resource_group`.
+As below, using local variables is done by using the `var` keyword followed by the name of the variable. In this example, we are using the variable `resource_group_name` that is going to be ammended with a local variable.
+
+### variables.tf
 
 ```terraform
 
+variable "resource_group_name" {
+  type = string
+  default = "tamopsrg"
+}
+
+```
+
+#### main.tf
+
+Ammending the variable `resource_group_name` to include "-local" using a local variable and referencing the local variable in the resource group.
+
+```terraform
+
+locals {
+  resource_group_name = "${var.resource_group_name}-local"
+}
+
 resource "azurerm_resource_group" "rg" {
-  name     = var.resource_group_name
+  name     = local.resource_group_name
   location = "uksouth"
 }
 
 ```
+
+
