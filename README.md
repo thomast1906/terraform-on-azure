@@ -49,7 +49,8 @@ Please do start from the beginning and work your way through the self-lead setup
 
 As you work through the self-lead, you will be asked to run various terraform. Please ensure you are in the correct `terraform `directory when running the terraform commands. (You will learn how to do this in section 3 [terraform state](https://github.com/thomast1906/terraform-on-azure/tree/main/3-terraform-state)) - Also remember to destroy your resources when you are done in each section.
 
+## Request a new tutorial / feature in this repo 
 
-
+Please do reach out to me or raise an issue on the GitHub repo if you are wanting me to include additional content - I feel it will be a continous work in progress to give you an understanding of Terraform while giving you the ability to deploy resources into Azure!
 
 
