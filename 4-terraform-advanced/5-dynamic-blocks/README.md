@@ -49,3 +49,8 @@ resource "azurerm_resource_group" "rg" {
 
 ```
 
+### Run example
+
+You can now run the example found in this section.
+
+Run Terraform from [here](https://github.com/thomast1906/terraform-on-azure/tree/main/4-terraform-advanced/5-dynamic-blocks/terraform)
