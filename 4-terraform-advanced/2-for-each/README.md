@@ -74,3 +74,9 @@ resource_group_names = [
 ## Terraform For Each - further reading
 
 - [Terraform for_each](https://www.terraform.io/docs/language/meta-arguments/for_each.html)
+
+### Run example
+
+You can now run the example found in this section.
+
+Run Terraform from [here](https://github.com/thomast1906/terraform-on-azure/tree/main/4-terraform-advanced/2-for-each/terraform)
