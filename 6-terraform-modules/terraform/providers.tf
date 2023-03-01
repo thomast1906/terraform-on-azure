@@ -1,10 +1,10 @@
 terraform {
-   backend "azurerm" {
-        resource_group_name  = "deploy-first-rg"
-        storage_account_name = "deployfirsttamopssa"
-        container_name       = "acr"
-        key                  = "terraform.tfstate"
-    }
+  backend "azurerm" {
+    resource_group_name  = "deploy-first-rg"
+    storage_account_name = "deployfirsttamopssa"
+    container_name       = "acr"
+    key                  = "terraform.tfstate"
+  }
 
   required_providers {
     azurerm = {
