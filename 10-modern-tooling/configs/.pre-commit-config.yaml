@@ -1,0 +1,56 @@
+repos:
+  - repo: https://github.com/antonbabenko/pre-commit-terraform
+    rev: v1.83.2
+    hooks:
+      - id: terraform_fmt
+        description: Format Terraform files
+      - id: terraform_validate
+        description: Validate Terraform files
+      - id: terraform_docs
+        description: Generate Terraform documentation
+        args:
+          - --hook-config=--path-to-file=README.md
+          - --hook-config=--add-to-existing-file=true
+          - --hook-config=--create-file-if-not-exist=true
+      - id: terraform_tflint
+        description: Run TFLint
+        args:
+          - --args=--only=terraform_deprecated_interpolation
+          - --args=--only=terraform_deprecated_index
+          - --args=--only=terraform_unused_declarations
+          - --args=--only=terraform_comment_syntax
+          - --args=--only=terraform_documented_outputs
+          - --args=--only=terraform_documented_variables
+          - --args=--only=terraform_typed_variables
+          - --args=--only=terraform_module_pinned_source
+          - --args=--only=terraform_naming_convention
+          - --args=--only=terraform_required_version
+      - id: terraform_tfsec
+        description: Run tfsec security analysis
+      - id: terraform_checkov
+        description: Run checkov security analysis
+        
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace
+        description: Remove trailing whitespace
+      - id: end-of-file-fixer
+        description: Ensure files end with newline
+      - id: check-yaml
+        description: Check YAML syntax
+      - id: check-added-large-files
+        description: Prevent large files from being committed
+      - id: check-case-conflict
+        description: Check for case conflicts
+      - id: check-merge-conflict
+        description: Check for merge conflicts
+      - id: check-json
+        description: Check JSON syntax
+        
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.37.0
+    hooks:
+      - id: markdownlint
+        description: Lint markdown files
+        args: ['--fix']

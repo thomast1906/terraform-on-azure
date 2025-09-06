@@ -1,0 +1,19 @@
+# Example terraform.tfvars file for testing
+# Copy this file to terraform.tfvars and customize the values
+
+resource_group_name   = "rg-terraform-testing-001"
+location             = "East US"
+storage_account_name = "sttesting001"
+
+tags = {
+  Environment = "Testing"
+  Project     = "TerraformValidation"
+  Owner       = "DevOps Team"
+  Purpose     = "Learning"
+}
+
+# Add your IP for storage account access (optional)
+# Get your IP with: curl -s https://ipinfo.io/ip
+allowed_ip_ranges = [
+  # "203.0.113.0/24"  # Example IP range
+]

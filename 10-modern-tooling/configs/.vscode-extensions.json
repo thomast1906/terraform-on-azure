@@ -1,0 +1,15 @@
+{
+  "recommendations": [
+    "hashicorp.terraform",
+    "ms-vscode.vscode-json",
+    "ms-azure-devops.azure-pipelines",
+    "ms-vscode.azure-account",
+    "redhat.vscode-yaml",
+    "ms-python.python",
+    "golang.go",
+    "github.copilot",
+    "github.vscode-pull-request-github",
+    "ms-vscode.powershell",
+    "ms-vscode.remote-containers"
+  ]
+}
