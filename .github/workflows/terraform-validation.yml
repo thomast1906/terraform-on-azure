@@ -1,0 +1,121 @@
+name: Terraform Validation and Formatting
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - '**/*.tf'
+      - '**/*.tfvars'
+      - '**/*.hcl'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '**/*.tf'
+      - '**/*.tfvars'
+      - '**/*.hcl'
+
+env:
+  TF_VERSION: "1.6.0"
+  TFLINT_VERSION: "v0.48.0"
+
+jobs:
+  terraform-checks:
+    name: Terraform Validation and Linting
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ env.TF_VERSION }}
+        
+    - name: Setup TFLint
+      uses: terraform-linters/setup-tflint@v4
+      with:
+        tflint_version: ${{ env.TFLINT_VERSION }}
+        
+    - name: Install Checkov
+      run: pip install checkov
+      
+    - name: Terraform Format Check
+      run: |
+        echo "Checking Terraform formatting..."
+        terraform fmt -check -recursive
+      continue-on-error: false
+      
+    - name: Terraform Validation
+      run: |
+        echo "Validating Terraform configurations..."
+        
+        # Find all directories with .tf files
+        find . -name "*.tf" -not -path "./.terraform/*" | xargs -I {} dirname {} | sort -u | while read dir; do
+          echo "Validating directory: $dir"
+          cd "$dir"
+          
+          # Initialize without backend for validation
+          terraform init -backend=false
+          
+          # Validate configuration
+          terraform validate
+          
+          # Return to root directory
+          cd - > /dev/null
+        done
+        
+    - name: TFLint Analysis
+      run: |
+        echo "Running TFLint analysis..."
+        
+        # Find all directories with .tf files and run tflint
+        find . -name "*.tf" -not -path "./.terraform/*" | xargs -I {} dirname {} | sort -u | while read dir; do
+          echo "Linting directory: $dir"
+          cd "$dir"
+          
+          # Initialize tflint if config exists
+          if [ -f ".tflint.hcl" ]; then
+            tflint --init
+          fi
+          
+          # Run tflint
+          tflint
+          
+          cd - > /dev/null
+        done
+        
+    - name: Security Scan with Checkov
+      run: |
+        echo "Running security scan with Checkov..."
+        checkov -d . --framework terraform --compact --quiet
+      continue-on-error: true # Allow to fail but show results
+      
+    - name: Summary
+      run: |
+        echo "✅ Terraform validation completed!"
+        echo "All checks have been performed:"
+        echo "- Format validation"
+        echo "- Syntax validation"  
+        echo "- Linting analysis"
+        echo "- Security scanning"
+
+  terraform-docs:
+    name: Generate Documentation
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Generate Terraform Docs
+      uses: terraform-docs/gh-actions@v1.0.0
+      with:
+        working-dir: .
+        output-file: README.md
+        output-method: inject
+        git-push: "true"
+        git-commit-message: "docs: update Terraform documentation"
