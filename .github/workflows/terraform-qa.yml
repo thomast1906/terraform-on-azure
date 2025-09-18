@@ -1,0 +1,86 @@
+name: Terraform Quality Assurance
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - '**/*.tf'
+      - '**/*.tfvars'
+      - '.github/workflows/terraform-qa.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '**/*.tf'
+      - '**/*.tfvars'
+
+env:
+  TF_VERSION: 1.6.0
+  TFLINT_VERSION: v0.48.0
+
+jobs:
+  terraform-format:
+    name: 🎨 Terraform Format Check
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ env.TF_VERSION }}
+
+    - name: Terraform Format Check
+      run: |
+        echo "🔍 Checking Terraform formatting..."
+        terraform fmt -check -recursive -diff
+        echo "✅ All files are properly formatted"
+
+  terraform-validate:
+    name: ✅ Terraform Validation
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ env.TF_VERSION }}
+
+    - name: Terraform Validation
+      run: |
+        for dir in $(find . -name "*.tf" -exec dirname {} \; | sort -u); do
+          echo "🔧 Validating $dir"
+          cd "$dir"
+          terraform init -backend=false
+          terraform validate
+          echo "✅ $dir validation passed"
+          cd - > /dev/null
+        done
+
+  security-scan:
+    name: 🔒 Security Scanning
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Run Checkov
+      uses: bridgecrewio/checkov-action@master
+      with:
+        directory: .
+        framework: terraform
+        output_format: cli
+        soft_fail: true
+
+  summary:
+    name: 📊 Quality Summary
+    runs-on: ubuntu-latest
+    needs: [terraform-format, terraform-validate, security-scan]
+    if: always()
+    steps:
+    - name: Quality Gate Summary
+      run: |
+        echo "## 🎯 Terraform Quality Assurance Summary" >> $GITHUB_STEP_SUMMARY
+        echo "✅ Repository quality checks completed" >> $GITHUB_STEP_SUMMARY
