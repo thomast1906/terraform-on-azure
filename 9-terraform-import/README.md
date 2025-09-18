@@ -31,6 +31,26 @@ By completing this section, you will learn how to:
 
 ### Import Process Overview
 
+#### Modern Import Blocks (Terraform >= 1.5) - **Recommended**
+```hcl
+# Define import blocks in your configuration
+import {
+  to = azurerm_resource_group.imported
+  id = "/subscriptions/{subscription-id}/resourceGroups/existing-rg"
+}
+
+resource "azurerm_resource_group" "imported" {
+  name     = "existing-rg"
+  location = "East US"
+  
+  tags = {
+    Environment = "Production"
+    ManagedBy   = "Terraform"
+  }
+}
+```
+
+#### Legacy Import Command (Still Supported)
 ```bash
 # 1. Write Terraform configuration for the resource
 # 2. Import the resource into state
@@ -43,20 +63,29 @@ terraform plan
 terraform apply
 ```
 
-## 1. Basic Resource Import
+### Benefits of Import Blocks
+
+- **Configuration as Code** - Import definitions are part of your Terraform configuration
+- **Reproducible** - Import process can be version controlled and shared
+- **Plannable** - You can see what will be imported with `terraform plan`
+- **Safe** - Import blocks can be safely committed without triggering imports
+- **Reviewable** - Import operations can be code-reviewed like any other change
+
+## 1. Basic Resource Import with Import Blocks
 
 ### Example: Importing a Resource Group
 
 **Step 1: Create existing resource (if needed)**
 ```bash
-# Create a resource group outside Terraform
+# Create a resource group outside Terraform for demonstration
 az group create --name "existing-rg" --location "East US"
 ```
 
-**Step 2: Write Terraform configuration**
+**Step 2: Write Terraform configuration with import block**
 ```hcl
 # main.tf
 terraform {
+  required_version = ">= 1.5"
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -69,7 +98,13 @@ provider "azurerm" {
   features {}
 }
 
-# Configuration for the existing resource group
+# Import block - defines what to import
+import {
+  to = azurerm_resource_group.imported
+  id = "/subscriptions/{subscription-id}/resourceGroups/existing-rg"
+}
+
+# Resource configuration for the existing resource group
 resource "azurerm_resource_group" "imported" {
   name     = "existing-rg"
   location = "East US"
@@ -77,37 +112,63 @@ resource "azurerm_resource_group" "imported" {
   tags = {
     Environment = "Production"
     ManagedBy   = "Terraform"
+    ImportedOn  = "2024-01-01"
   }
 }
 ```
 
-**Step 3: Import the resource**
+**Step 3: Plan and apply the import**
 ```bash
 # Initialize Terraform
 terraform init
 
-# Import the resource group
-terraform import azurerm_resource_group.imported /subscriptions/{subscription-id}/resourceGroups/existing-rg
+# Plan to see what will be imported
+terraform plan
+
+# Apply to perform the import
+terraform apply
 
 # Verify the import
 terraform show
 ```
 
-**Step 4: Validate configuration**
+**Step 4: Remove import blocks after successful import**
+```hcl
+# Remove the import block after successful import
+# import {
+#   to = azurerm_resource_group.imported
+#   id = "/subscriptions/{subscription-id}/resourceGroups/existing-rg"
+# }
+
+# Keep only the resource configuration
+resource "azurerm_resource_group" "imported" {
+  name     = "existing-rg"
+  location = "East US"
+  
+  tags = {
+    Environment = "Production"
+    ManagedBy   = "Terraform"
+    ImportedOn  = "2024-01-01"
+  }
+}
+```
+
+**Step 5: Validate configuration**
 ```bash
-# Check for differences
+# Check for differences after removing import block
 terraform plan
 
-# If plan shows changes, adjust configuration to match actual resource
+# If plan shows unwanted changes, adjust configuration to match actual resource
 terraform apply
 ```
 
 ## 📚 Additional Resources
 
-- [Terraform Import Documentation](https://developer.hashicorp.com/terraform/cli/import)
+- [Terraform Import Blocks Documentation](https://developer.hashicorp.com/terraform/language/import)
 - [Azure Resource ID Formats](https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/resource-name-rules)
 - [Terraformer Tool](https://github.com/GoogleCloudPlatform/terraformer)
 - [AzAPI Provider for Latest Azure Features](https://registry.terraform.io/providers/Azure/azapi/latest)
+- [Terraform State Management Best Practices](https://developer.hashicorp.com/terraform/tutorials/state)
 
 ## 🎯 Key Takeaways
 
