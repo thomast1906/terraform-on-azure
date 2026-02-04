@@ -1,6 +1,6 @@
 # Terraform on Azure
 
-Learn how to deploy infrastructure on Azure using Terraform—from the basics to production-ready configurations.
+Learn how to deploy infrastructure on Azure using Terraform - from the basics to production-ready configurations.
 
 ## What you'll learn
 
@@ -124,31 +124,41 @@ Work through these sections in order:
 
 ## Quick start
 
-Get started in 5 minutes:
+### How the tutorials are organized
+
+Sections are numbered **1- through 13-** to guide you through a learning path:
+
+- **1-terraform-basics/** - Installation, setup, and first deployment
+- **2-terraform-variables/** - Making code reusable
+- **3-terraform-state/** - Understanding state management
+- **4-terraform-advanced/** - Loops, conditionals, and dependencies
+- ...and so on through **13-terraform-mcp-server/**
+
+Each section folder contains:
+- `README.md` - Overview and links to tutorials
+- Numbered markdown files (e.g., `1-terraform-install.md`)
+- `examples/` or `terraform/` folders with working code
+
+**Work through sections in order.** Each builds on concepts from previous sections.
+
+### Get started now
 
 ```bash
-# Install Terraform (macOS)
-brew tap hashicorp/tap
-brew install hashicorp/tap/terraform
-
-# Clone this repository
+# 1. Clone this repository
 git clone https://github.com/thomast1906/terraform-on-azure.git
 cd terraform-on-azure
 
-# Sign in to Azure
-az login
+# 2. Start with section 1
+cd 1-terraform-basics
 
-# Navigate to first tutorial
-cd 1-terraform-basics/4-terraform-azure-provider
-
-# Initialize and deploy
-terraform init
-terraform plan
-terraform apply
-
-# Clean up
-terraform destroy
+# 3. Follow the README to install Terraform and configure your environment
 ```
+
+You'll learn to install Terraform, set up VS Code, authenticate to Azure, and deploy your first resource group—all in section 1.
+
+By section 3, you'll have deployed infrastructure with remote state. By section 13, you'll be using AI assistance to write Terraform code.
+
+**Start here:** [1. Terraform basics](1-terraform-basics/) →
 
 ## Get help
 
