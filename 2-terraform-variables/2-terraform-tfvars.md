@@ -1,63 +1,130 @@
-# Terraform tfvars
+# Use variable files
 
-tfvars files are used to store variables that are used in Terraform. These files are used to store sensitive information such as passwords and keys. These files are not stored in the repository and are ignored by git.
+Variable files let you separate configuration values from your Terraform code. This keeps sensitive values out of version control and makes it easy to manage different environments.
 
-## Terraform tfvars - pros
+## Create a tfvars file
 
-- Recommended for storing sensitive information
-- Recommended for storing information that is not to be shared
-
-## Terraform tfvars - cons
-
-- Requires additional configuration
-- Requires additional cost
-
-## Terraform tfvars - example
-
-In this example, we will be creating a resource group in Azure. We will be using a tfvars file to pass the name of the resource group into Terraform.
-
-### Terraform tfvars - example - variables.tf
-
-Creating variable files is a best practice, this allows you to keep all of your variables in one place.
-
-Variable `resource_group_name` is of type `string` and has a default value of `tamopsrg`.
+Create `terraform.tfvars`:
 
 ```terraform
+resource_group_name = "rg-prod-app"
+location            = "uksouth"
+environment         = "production"
 
+tags = {
+  ManagedBy   = "Terraform"
+  Environment = "Production"
+  CostCenter  = "Engineering"
+}
+```
+
+Terraform automatically loads files named `terraform.tfvars` or `*.auto.tfvars`.
+
+## Define your variables
+
+In `variables.tf`, declare the variables without default values:
+
+```terraform
 variable "resource_group_name" {
-  type = string
+  description = "Name of the resource group"
+  type        = string
 }
 
+variable "location" {
+  description = "Azure region for resources"
+  type        = string
+}
+
+variable "environment" {
+  description = "Environment name"
+  type        = string
+}
+
+variable "tags" {
+  description = "Tags to apply to all resources"
+  type        = map(string)
+}
 ```
 
-### Terraform tfvars - example - terraform.tfvars
+## Use the variables
 
-Notice the reference to the variable `resource_group_name` in the tfvars file. This is used to pass the value `tamopsrg` to the variable `resource_group_name`.
-
-```terraform
-
-resource_group_name = "tamopsrg"
-
-```
-
-### Terraform tfvars - example - main.tf
+In `main.tf`:
 
 ```terraform
-
-resource "azurerm_resource_group" "rg" {
+resource "azurerm_resource_group" "example" {
   name     = var.resource_group_name
-  location = "uksouth"
+  location = var.location
+  tags     = var.tags
 }
-
 ```
 
-### Terraform tfvars - example - terraform init
+## Deploy
 
-Running terraform with the tfvars file is done by using the `-tfvars-file` flag. example below
+Terraform picks up `terraform.tfvars` automatically:
 
+```bash
+terraform apply
+```
+
+## Manage multiple environments
+
+Create separate files for each environment:
+
+`dev.tfvars`:
 ```terraform
+resource_group_name = "rg-dev-app"
+location            = "uksouth"
+environment         = "development"
 
-terraform plan -tfvars-file=terraform.tfvars
+tags = {
+  ManagedBy   = "Terraform"
+  Environment = "Development"
+}
+```
 
+`prod.tfvars`:
+```terraform
+resource_group_name = "rg-prod-app"
+location            = "uksouth"
+environment         = "production"
+
+tags = {
+  ManagedBy   = "Terraform"
+  Environment = "Production"
+}
+```
+
+Deploy to dev:
+```bash
+terraform apply -var-file="dev.tfvars"
+```
+
+Deploy to prod:
+```bash
+terraform apply -var-file="prod.tfvars"
+```
+
+## Keep secrets out of version control
+
+Never commit sensitive values to git. Create a `.gitignore`:
+
+```
+# Terraform state files
+*.tfstate
+*.tfstate.backup
+
+# Variable files with secrets
+*.tfvars
+!example.tfvars
+
+# Terraform directory
+.terraform/
+```
+
+For secrets like passwords or keys, use Azure Key Vault (covered in section 5) or environment variables:
+
+```bash
+export TF_VAR_admin_password="YourSecretPassword"
+terraform apply
 ```
 

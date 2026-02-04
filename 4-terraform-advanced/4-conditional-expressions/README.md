@@ -1,74 +1,154 @@
-# Terraform Conditions 
+# Use conditional expressions
 
-In this section we will look at how to use conditions in Terraform.
+Conditional expressions let you make decisions in your Terraform configuration. They use the format: `condition ? true_value : false_value`
 
-## Terraform Conditions - pros
-
-- Allows you to control the order in which resources are created
-
-## Terraform Conditions - cons
-
-- Requires additional configuration
-
-## Terraform Conditions - example
-
-A conditional expression uses the value of a boolean expression to select one of two values.
-
-In this example, we will be creating a resource group in Azure. We will be using a conditional expression to control the order in which resources are created.
-
-### Terraform Conditions - example - variables.tf
-
-Creating variable files is a best practice, this allows you to keep all of your variables in one place.
-
-Variable `resource_group_name` is of type `string` and has a default value of `tamopsrg`.
+## Basic conditionals
 
 ```terraform
-
-variable "resource_group_name" {
-  type = string
-  default = "tamopsrg"
+variable "environment" {
+  description = "Environment name"
+  type        = string
+  default     = "dev"
 }
 
-variable "create_resource_group" {
-  type = bool
-  default = false
+resource "azurerm_resource_group" "example" {
+  name     = "rg-demo"
+  location = var.environment == "prod" ? "northeurope" : "uksouth"
+  
+  tags = {
+    Environment = var.environment
+    CostCenter  = var.environment == "prod" ? "Production" : "Development"
+  }
 }
-
 ```
 
+Production resources deploy to North Europe. Everything else goes to UK South.
 
-### Terraform Conditions - example - main.tf
+## Conditional resource creation
 
-In this example, we are creating a resource group and a storage account. We are using a conditional expression to determine whether or not to create the resource group.
-
-1 returns true, 0 returns false.
-
-Change the value of `create_resource_group` to `true` to create the resource group.
+Create resources only when needed:
 
 ```terraform
-
-resource "azurerm_resource_group" "rg" {
-  name     = var.resource_group_name
-  location = "uksouth"
+variable "enable_backup" {
+  description = "Enable backup vault"
+  type        = bool
+  default     = false
 }
 
-resource "azurerm_storage_account" "sa" {
-  count                    = var.create_resource_group ? 1 : 0
-  name                     = "tamopsstorage"
-  resource_group_name      = azurerm_resource_group.rg.name
-  location                 = azurerm_resource_group.rg.location
+resource "azurerm_data_protection_backup_vault" "example" {
+  count = var.enable_backup ? 1 : 0
+  
+  name                = "bv-demo"
+  resource_group_name = azurerm_resource_group.example.name
+  location            = azurerm_resource_group.example.location
+  datastore_type      = "VaultStore"
+  redundancy          = "LocallyRedundant"
+}
+```
+
+When `enable_backup` is `false`, count is 0 and Terraform creates nothing.
+
+## Choose SKUs by environment
+
+```terraform
+variable "environment" {
+  type    = string
+  default = "dev"
+}
+
+locals {
+  # Use smaller SKUs in non-prod
+  vm_size = var.environment == "prod" ? "Standard_D4s_v5" : "Standard_B2s"
+  
+  storage_replication = var.environment == "prod" ? "GRS" : "LRS"
+  
+  database_sku = var.environment == "prod" ? "GP_Gen5_4" : "GP_Gen5_2"
+}
+
+resource "azurerm_linux_virtual_machine" "example" {
+  name                = "vm-demo"
+  resource_group_name = azurerm_resource_group.example.name
+  location            = azurerm_resource_group.example.location
+  size                = local.vm_size
+  
+  # ... other configuration
+}
+```
+
+## Nested conditionals
+
+```terraform
+locals {
+  # Chain conditions for complex logic
+  vm_size = (
+    var.environment == "prod" ? "Standard_D4s_v5" :
+    var.environment == "staging" ? "Standard_D2s_v5" :
+    "Standard_B2s"
+  )
+}
+```
+
+## Conditional properties
+
+Some resources require different configurations per environment:
+
+```terraform
+resource "azurerm_storage_account" "example" {
+  name                     = "stdemo${random_string.suffix.result}"
+  resource_group_name      = azurerm_resource_group.example.name
+  location                 = azurerm_resource_group.example.location
   account_tier             = "Standard"
-  account_replication_type = "LRS"
-
-  depends_on = [
-    azurerm_resource_group.rg
-  ]
+  account_replication_type = var.environment == "prod" ? "GRS" : "LRS"
+  
+  # Enable advanced threat protection in prod
+  enable_https_traffic_only = true
+  min_tls_version          = var.environment == "prod" ? "TLS1_2" : "TLS1_0"
+  
+  tags = {
+    Environment = var.environment
+  }
 }
 
+resource "random_string" "suffix" {
+  length  = 8
+  special = false
+  upper   = false
+}
 ```
 
-### Run example
+## Validate with conditionals
 
-You can now run the example found in this section.
+Use conditionals in validation rules:
 
-Run Terraform from [here](https://github.com/thomast1906/terraform-on-azure/tree/main/4-terraform-advanced/4-conditional-expressions/terraform)
+```terraform
+variable "environment" {
+  description = "Environment name"
+  type        = string
+  
+  validation {
+    condition     = contains(["dev", "staging", "prod"], var.environment)
+    error_message = "Environment must be dev, staging, or prod."
+  }
+}
+
+variable "instance_count" {
+  description = "Number of instances"
+  type        = number
+  
+  validation {
+    condition     = var.instance_count > 0 && var.instance_count <= 10
+    error_message = "Instance count must be between 1 and 10."
+  }
+}
+```
+
+## Try it yourself
+
+```bash
+cd 4-terraform-advanced/4-conditional-expressions/conditional-expressions-example
+terraform init
+terraform validate
+terraform plan
+terraform apply -var="environment=prod"
+terraform destroy
+```

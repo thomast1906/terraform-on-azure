@@ -1,82 +1,138 @@
-# Terraform For Each
-[]: # 
-[]: # A guide on how to use
+# Create multiple resources with for_each
 
-In this section we will be looking at the for_each argument in Terraform.
+The `for_each` argument creates multiple instances of a resource. Use it when you need several similar resources with different configurations.
 
-## Terraform For Each - pros
+## for_each basics
 
-- Allows you to create multiple resources in a single resource block
-- Allows you to create multiple resources in a single resource block
-
-## Terraform For Each - cons
-
-- Requires additional configuration
-
-## Terraform For Each - example
-
-In this example, we will be creating a resource group in Azure. We will be using the `for_each` argument to create multiple resource groups.
-
-### Terraform For Each - example - variables.tf
-
-Creating variable files is a best practice, this allows you to keep all of your variables in one place.
-
-Variable `resource_group_names` is of type `list(string)` and has a default value of `["tamopsrg", "tamopsrg2"]`.
+`for_each` accepts a map or set:
 
 ```terraform
-
-variable "resource_group_names" {
-  type = list(string)
-  default = ["tamopsrg", "tamopsrg2"]
+resource "azurerm_resource_group" "example" {
+  for_each = toset(["dev", "staging", "prod"])
+  
+  name     = "rg-${each.key}"
+  location = "uksouth"
+  
+  tags = {
+    Environment = each.key
+  }
 }
-
 ```
 
-### Terraform For Each - example - main.tf
+Inside the resource:
+- `each.key` is the current element
+- `each.value` is the value (same as key for sets)
 
-In this example, we are creating a resource group. We are using the for_each argument to create multiple resource groups.
+## Using maps for complex configurations
+
+Maps let you specify different properties per resource:
 
 ```terraform
+variable "environments" {
+  description = "Environment configurations"
+  type = map(object({
+    location = string
+    sku      = string
+  }))
+  default = {
+    dev = {
+      location = "uksouth"
+      sku      = "Standard_B2s"
+    }
+    staging = {
+      location = "ukwest"
+      sku      = "Standard_D2s_v5"
+    }
+    prod = {
+      location = "northeurope"
+      sku      = "Standard_D4s_v5"
+    }
+  }
+}
 
-resource "azurerm_resource_group" "rg" {
-  for_each = toset(var.resource_group_names)
-  name     = each.key
+resource "azurerm_resource_group" "example" {
+  for_each = var.environments
+  
+  name     = "rg-${each.key}"
+  location = each.value.location
+  
+  tags = {
+    Environment = each.key
+  }
+}
+```
+
+## Reference specific instances
+
+Access created resources by their key:
+
+```terraform
+resource "azurerm_storage_account" "example" {
+  name                     = "stdemo${each.key}"
+  resource_group_name      = azurerm_resource_group.example["prod"].name  # Reference prod RG
+  location                 = azurerm_resource_group.example["prod"].location
+  account_tier             = "Standard"
+  account_replication_type = "GRS"
+}
+```
+
+## Create related resources
+
+```terraform
+resource "azurerm_resource_group" "example" {
+  for_each = toset(["dev", "staging", "prod"])
+  
+  name     = "rg-${each.key}"
   location = "uksouth"
 }
 
-```
-
-### Terraform For Each - example - output.tf
-
-In this example, we are creating an output. We are using the for_each argument to create multiple outputs.
-
-```terraform
-
-output "resource_group_names" {
-  value = azurerm_resource_group.rg[*].name
+resource "azurerm_storage_account" "example" {
+  for_each = azurerm_resource_group.example
+  
+  name                     = "st${each.key}${random_string.suffix.result}"
+  resource_group_name      = each.value.name
+  location                 = each.value.location
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
 }
 
+resource "random_string" "suffix" {
+  length  = 8
+  special = false
+  upper   = false
+}
 ```
 
-### Terraform For Each - example - output
+## Output all resources
+
+```terraform
+output "resource_group_ids" {
+  description = "Map of environment names to resource group IDs"
+  value       = { for k, rg in azurerm_resource_group.example : k => rg.id }
+}
+```
+
+## for_each vs count
+
+Use `for_each` when:
+- Each instance has a meaningful identifier
+- You might add or remove instances
+- Resources aren't identical
+
+Use `count` when:
+- You need a specific number of identical resources
+- Order matters
+- Resources are truly identical
+
+Prefer `for_each` in most cases. It handles resource changes better.
+
+## Try it yourself
 
 ```bash
-
-Outputs:
-
-resource_group_names = [
-  "tamopsrg",
-  "tamopsrg2",
-]
-
+cd 4-terraform-advanced/2-for-each/terraform
+terraform init
+terraform validate
+terraform plan
+terraform apply
+terraform destroy
 ```
-
-## Terraform For Each - further reading
-
-- [Terraform for_each](https://www.terraform.io/docs/language/meta-arguments/for_each.html)
-
-### Run example
-
-You can now run the example found in this section.
-
-Run Terraform from [here](https://github.com/thomast1906/terraform-on-azure/tree/main/4-terraform-advanced/2-for-each/terraform)

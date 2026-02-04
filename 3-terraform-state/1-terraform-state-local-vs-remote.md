@@ -1,33 +1,80 @@
-# Terraform State - Local vs Remote
+# Understand Terraform state
 
-Terraform state is a file that is used to keep track of the resources that have been created by Terraform. This file is used to keep track of the resources that have been created, and also to keep track of the state of the resources that have been created.
+Terraform state tracks the resources it manages. Every time you run `terraform apply`, Terraform updates this state file with the current configuration of your Azure resources.
 
-# Terraform local state
+## What is state?
 
-Terraform local state is the default state that Terraform uses. This state is stored locally on the machine that Terraform is being run on. This state is stored in a file called `terraform.tfstate`. This file is stored in the same directory that Terraform is being run from.
+The state file maps your Terraform configuration to real Azure resources. Terraform uses it to:
 
-## Terraform local state - pros
+- Know which resources it manages
+- Detect configuration drift
+- Plan changes efficiently
+- Store resource metadata
 
-- Simple to use
-- No additional configuration required
+## Local state
 
-## Terraform local state - cons
+By default, Terraform stores state locally in `terraform.tfstate`:
 
-- Not recommended for production use
-- Not recommended for use with multiple users
-- Not recommended for use with multiple Terraform workspaces
+```terraform
+terraform {
+  backend "local" {}
+}
+```
 
-# Terraform remote state
+Local state works for:
+- Learning and experimentation
+- Personal projects
+- Single-user scenarios
 
-Terraform remote state is a state that is stored remotely. This state is stored in a remote location, in this case - it will be an Azure Storage Account.
+Local state doesn't work for:
+- Team collaboration (no one else can access your state)
+- CI/CD pipelines (each run starts fresh)
+- Production environments (state can be lost or corrupted)
 
-## Terraform remote state - pros
+## Remote state
 
-- Recommended for production use
-- Recommended for use with multiple users
-- Recommended for use with multiple Terraform workspaces
+Remote state stores your state file in a shared location. For Azure, use an Azure Storage Account:
 
-## Terraform remote state - cons
+```terraform
+terraform {
+  backend "azurerm" {
+    resource_group_name  = "rg-terraform-state"
+    storage_account_name = "sttfstate12345"
+    container_name       = "tfstate"
+    key                  = "prod.terraform.tfstate"
+  }
+}
+```
 
-- Requires additional configuration
-- Requires additional cost
+Remote state gives you:
+
+**State locking**: Prevents concurrent modifications. Multiple team members can't accidentally run `terraform apply` at the same time.
+
+**Collaboration**: Everyone on your team accesses the same state. Changes are visible immediately.
+
+**Security**: State files contain sensitive data. Azure Storage Account provides encryption, access controls, and audit logs.
+
+**Durability**: Azure Storage Account has built-in redundancy. Your state won't disappear if a laptop dies.
+
+**History**: Enable blob versioning to keep historical versions of your state.
+
+## When to use each
+
+Use local state:
+- You're learning Terraform
+- You're the only person working on the code
+- The infrastructure is temporary (testing, demos)
+
+Use remote state:
+- Multiple people work on the infrastructure
+- You run Terraform from CI/CD
+- The infrastructure is production or shared
+- You need audit trails
+
+## Next steps
+
+In the following sections, you'll:
+1. Deploy infrastructure using local state
+2. Set up an Azure Storage Account for remote state
+3. Migrate from local to remote state
+4. Deploy infrastructure using remote state

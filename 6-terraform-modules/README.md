@@ -1,161 +1,309 @@
-# Terraform Modules
+# Build reusable modules
 
-A module is a collection of resources that are used together. Modules are used to create reusable components, increase readability, and to organize infrastructure as code.
+Modules package Terraform configurations into reusable components. Instead of copying resources, you create a module once and use it everywhere.
 
-Writing Terraform, like any other IaC toolset, over time you may be repeating the same process for common resources such as an Azure Virtual network, Container registry, Postgres Database etc – instead of copying the same resource multiple times, you can create what is called a Terraform module to assist you with this repetition allowing you to create reusable Terraform. 
+## Why use modules
 
-Modules are a great way to create reusable components, increase readability, and to organize infrastructure as code.
+You'll deploy similar infrastructure repeatedly:\n- Multiple environments (dev, staging, prod)\n- Multiple projects with common patterns\n- Standard resource configurations\n\nModules eliminate duplication and enforce standards.
 
-## Terraform Module - Pros
+## Module structure
 
-- Reusable
-- Organised
-- Readable
-- Maintainable
-- Versioned
-
-## Terraform Module - Cons
-
-- Complexity
-
-## Terraform Module Structure
-
-A Terraform module is a directory that contains Terraform configuration files. The directory structure of a module is as follows:
-
-What can be included as part of a Terraform module?
-
-- Terraform Resources – That deploy whenever you reference your module within Terraform
-- Terraform Inputs – From your main Terraform deployment you will input various values and configurations that will be referenced within your Terraform module
-- Terraform Outputs – Outputs that can be used once the module is deployed, for example the resource ID
-- Whatever else you want to include 🙂 – What else you want to include can be decided by you and each module is certainly different!
-
-## Standard Terraform Deployment
-
-The below is a standard Terraform deployment that deploys an `Azure Resource Group` and `Azure Container Registry`
-
-```terraform
-
-# Resource Group
-resource "azurerm_resource_group" "rg" {
-  name     = "tamops"
-  location = "UK South"
-}
-
-# Azure Container Registry
-
-resource "azurerm_container_registry" "acr" {
-  name                = "tamopsacr"
-  resource_group_name = azurerm_resource_group.rg.name
-  location            = azurerm_resource_group.rg.location
-  sku                 = "Standard"
-  admin_enabled       = true
-}
-
-``` 
-
-How can we make this more reusable? (This is a lightweight example) – We can create a Terraform module that will deploy the above resources. Allowing us to reference the module within our Terraform deployment and reuse the module as many times as we want.
-
-## Terraform Module Deployment
-
-### Terraform Module - Directory Structure
-
-The below is the directory structure of a Terraform module, basic structure that can follow similar that you have created a standard Terraform deployment.
-
-```bash
-├── main.tf
-├── outputs.tf
-├── variables.tf
-```
-
-### Terraform Module - main.tf
-
-The below is the `main.tf` file that will contain the resources that will be deployed when you reference the module within your Terraform deployment.
-
-```terraform
-
-# Resource Group
-resource "azurerm_resource_group" "rg" {
-  name     = var.resource_group_name
-  location = var.location
-}
-
-# Azure Container Registry
-
-resource "azurerm_container_registry" "acr" {
-  name                = var.acr_name
-  resource_group_name = azurerm_resource_group.rg.name
-  location            = azurerm_resource_group.rg.location
-  sku                 = var.acr_sku
-  admin_enabled       = var.acr_admin_enabled
-}
+A module is a directory with Terraform files:
 
 ```
+modules/
+└── storage-account/
+    ├── main.tf
+    ├── variables.tf
+    └── outputs.tf
+```
 
-### Terraform Module - variables.tf
+## Create a module
 
-The below is the `variables.tf` file that will contain the variables that will be referenced within the `main.tf` file.
+Create `modules/storage-account/main.tf`:
 
 ```terraform
+resource "azurerm_storage_account" "this" {
+  name                     = var.name
+  resource_group_name      = var.resource_group_name
+  location                 = var.location
+  account_tier             = var.account_tier
+  account_replication_type = var.replication_type
+  
+  enable_https_traffic_only = true
+  min_tls_version          = "TLS1_2"
+  
+  tags = var.tags
+}
+```
+
+Create `modules/storage-account/variables.tf`:
+
+```terraform
+variable "name" {
+  description = "Storage account name"
+  type        = string
+}
 
 variable "resource_group_name" {
+  description = "Resource group name"
   type        = string
-  description = "The name of the resource group in which to create the container registry."
 }
 
 variable "location" {
+  description = "Azure region"
   type        = string
-  description = "The Azure location where the container registry should exist."
 }
 
-variable "acr_name" {
+variable "account_tier" {
+  description = "Storage account tier"
   type        = string
-  description = "The name of the container registry."
+  default     = "Standard"
 }
 
-variable "acr_sku" {
+variable "replication_type" {
+  description = "Replication type"
   type        = string
-  description = "The SKU of the container registry."
+  default     = "LRS"
 }
 
-variable "acr_admin_enabled" {
+variable "tags" {
+  description = "Resource tags"
+  type        = map(string)
+  default     = {}
+}
+```
+
+Create `modules/storage-account/outputs.tf`:
+
+```terraform
+output "id" {
+  description = "Storage account ID"
+  value       = azurerm_storage_account.this.id
+}
+
+output "name" {
+  description = "Storage account name"
+  value       = azurerm_storage_account.this.name
+}
+
+output "primary_blob_endpoint" {
+  description = "Primary blob endpoint"
+  value       = azurerm_storage_account.this.primary_blob_endpoint
+}
+```
+
+## Use the module
+
+In your root `main.tf`:
+
+```terraform
+resource "azurerm_resource_group" "example" {
+  name     = "rg-demo"
+  location = "uksouth"
+}
+
+module "storage_dev" {
+  source = "./modules/storage-account"
+  
+  name                = "stdev${random_string.suffix.result}"
+  resource_group_name = azurerm_resource_group.example.name
+  location            = azurerm_resource_group.example.location
+  replication_type    = "LRS"
+  
+  tags = {
+    Environment = "Development"
+  }
+}
+
+module "storage_prod" {
+  source = "./modules/storage-account"
+  
+  name                = "stprod${random_string.suffix.result}"
+  resource_group_name = azurerm_resource_group.example.name
+  location            = azurerm_resource_group.example.location
+  replication_type    = "GRS"  # Geo-redundant for production
+  
+  tags = {
+    Environment = "Production"
+  }
+}
+
+resource "random_string" "suffix" {
+  length  = 8
+  special = false
+  upper   = false
+}
+```
+
+## Access module outputs
+
+```terraform
+output "dev_storage_id" {
+  value = module.storage_dev.id
+}
+
+output "prod_storage_endpoint" {
+  value = module.storage_prod.primary_blob_endpoint
+}
+```
+
+## Use public modules
+
+The Terraform Registry has thousands of public modules:
+
+```terraform
+module "network" {
+  source  = "Azure/vnet/azurerm"
+  version = "4.1.0"
+  
+  resource_group_name = azurerm_resource_group.example.name
+  vnet_location       = azurerm_resource_group.example.location
+  vnet_name           = "vnet-demo"
+  address_space       = ["10.0.0.0/16"]
+  
+  subnet_names     = ["subnet-web", "subnet-data"]
+  subnet_prefixes  = ["10.0.1.0/24", "10.0.2.0/24"]
+}
+```
+
+Always specify a version to avoid unexpected changes.
+
+## Build a complete module
+
+Here's a more realistic module for an Azure Container Registry:
+
+`modules/acr/main.tf`:
+
+```terraform
+resource "azurerm_container_registry" "this" {
+  name                = var.name
+  resource_group_name = var.resource_group_name
+  location            = var.location
+  sku                 = var.sku
+  admin_enabled       = var.admin_enabled
+  
+  dynamic "identity" {
+    for_each = var.identity_enabled ? [1] : []
+    content {
+      type = "SystemAssigned"
+    }
+  }
+  
+  tags = var.tags
+}
+
+resource "azurerm_role_assignment" "acr_pull" {
+  count = length(var.pull_role_principal_ids)
+  
+  scope                = azurerm_container_registry.this.id
+  role_definition_name = "AcrPull"
+  principal_id         = var.pull_role_principal_ids[count.index]
+}
+```
+
+`modules/acr/variables.tf`:
+
+```terraform
+variable "name" {
+  description = "ACR name"
+  type        = string
+}
+
+variable "resource_group_name" {
+  description = "Resource group name"
+  type        = string
+}
+
+variable "location" {
+  description = "Azure region"
+  type        = string
+}
+
+variable "sku" {
+  description = "ACR SKU"
+  type        = string
+  default     = "Basic"
+  
+  validation {
+    condition     = contains(["Basic", "Standard", "Premium"], var.sku)
+    error_message = "SKU must be Basic, Standard, or Premium."
+  }
+}
+
+variable "admin_enabled" {
+  description = "Enable admin user"
   type        = bool
-  description = "Should the admin user be enabled?"
+  default     = false
 }
 
+variable "identity_enabled" {
+  description = "Enable managed identity"
+  type        = bool
+  default     = false
+}
+
+variable "pull_role_principal_ids" {
+  description = "Principal IDs to grant AcrPull role"
+  type        = list(string)
+  default     = []
+}
+
+variable "tags" {
+  description = "Resource tags"
+  type        = map(string)
+  default     = {}
+}
 ```
 
-### Terraform Module - outputs.tf
-
-The below is the `outputs.tf` file that will contain the outputs that will be referenced within the `main.tf` file.
+`modules/acr/outputs.tf`:
 
 ```terraform
-
-output "acr_id" {
-  value = azurerm_container_registry.acr.id
+output "id" {
+  description = "ACR ID"
+  value       = azurerm_container_registry.this.id
 }
 
-```
-
-### Terraform Module - Reference
-
-The below is the `main.tf` file that will reference the module within your Terraform deployment.
-
-```terraform
-
-module "acr" {
-  source = "./modules/acr"
-
-  resource_group_name = "tamops"
-  location            = "UK South"
-  acr_name            = "tamopsacr"
-  acr_sku             = "Standard"
-  acr_admin_enabled   = true
+output "name" {
+  description = "ACR name"
+  value       = azurerm_container_registry.this.name
 }
 
+output "login_server" {
+  description = "ACR login server"
+  value       = azurerm_container_registry.this.login_server
+}
+
+output "admin_username" {
+  description = "ACR admin username"
+  value       = azurerm_container_registry.this.admin_username
+  sensitive   = true
+}
+
+output "admin_password" {
+  description = "ACR admin password"
+  value       = azurerm_container_registry.this.admin_password
+  sensitive   = true
+}
 ```
 
-### Run example
+## Try it yourself
 
-You can now run the example found in this section.
+```bash
+cd 6-terraform-modules/terraform
+terraform init
+terraform validate
+terraform plan
+terraform apply
+terraform destroy
+```
 
-Run Terraform from [here](https://github.com/thomast1906/terraform-on-azure/tree/main/4-terraform-advanced/6-terraform-modules/terraform)
+## Module best practices
+
+- Keep modules focused on one purpose
+- Use meaningful variable names and descriptions
+- Add validation rules to variables
+- Document all inputs and outputs
+- Version your modules when sharing
+- Test modules before using in production
+- Don't over-abstract—simple is better

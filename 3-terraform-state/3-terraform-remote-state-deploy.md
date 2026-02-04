@@ -1,59 +1,169 @@
-# Terraform Deploy using Remote State file 
+# Deploy with remote state
 
-Review directory [remote-state-example](https://github.com/thomast1906/terraform-on-azure/tree/main/2-terraform-state/remote-state-example) and the Terraform configuration files.
+Remote state stores your state file in Azure Storage. This enables team collaboration and provides state locking to prevent conflicts.
 
-## Create remote state storage account
+## Create the storage account
 
-Create a storage account to store the remote state file.
-1. Edit the [variables](https://github.com/thomast1906/terraform-on-azure/tree/main/2-terraform-state/scripts/1-create-terraform-storage.sh#L6-L7)
-2. Run the script `./scripts/1-create-terraform-storage.sh`
-3. The script will create
-- Azure Resource Group
-- Azure Storage Account
-- Azure Blob storage location within Azure Storage Account
-4. Successful script run will create a storage account with blob ready to state terraform state file
+You need an Azure Storage Account to hold your state file. Run the provided script:
 
-## Terraform init
+```bash
+cd 3-terraform-state/scripts
+chmod +x 1-create-terraform-storage.sh
+```
 
-Run the following command to initialise Terraform when in the remote-state-example directory:
+Edit the variables at the top of `1-create-terraform-storage.sh`:
+
+```bash
+RESOURCE_GROUP_NAME="rg-terraform-state"
+STORAGE_ACCOUNT_NAME="sttfstate${RANDOM}"
+```
+
+Run the script:
+
+```bash
+./1-create-terraform-storage.sh
+```
+
+The script creates:
+- An Azure resource group
+- An Azure storage account with a unique name
+- A blob container named `tfstate`
+- Blob versioning enabled for state history
+
+The script outputs the values you'll need for your backend configuration.
+
+## Configure remote backend
+
+Navigate to the remote state example:
+
+```bash
+cd ../remote-state-example
+```
+
+Check `providers.tf`. Update it with your storage account details:
 
 ```terraform
+terraform {
+  required_version = ">= 1.0"
+  
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "~> 4.0"
+    }
+  }
+  
+  backend "azurerm" {
+    resource_group_name  = "rg-terraform-state"
+    storage_account_name = "sttfstate12345"  # Use your storage account name
+    container_name       = "tfstate"
+    key                  = "demo.terraform.tfstate"
+  }
+}
+
+provider "azurerm" {
+  features {}
+}
+```
+
+The `backend "azurerm"` block tells Terraform where to store state remotely.
+
+## Initialize with remote backend
+
+```bash
 terraform init
 ```
 
-## Terraform plan
+Terraform configures the Azure backend:
 
-Run the following command to create and show a plan of your Terraform configuration:
+```
+Initializing the backend...
+
+Successfully configured the backend "azurerm"!
+```
+
+## Deploy the resource
+
+Check the configuration in `main.tf`:
 
 ```terraform
+resource "azurerm_resource_group" "rg" {
+  name     = "rg-terraform-remote-state"
+  location = "uksouth"
+}
+```
+
+Validate and plan:
+
+```bash
+terraform validate
 terraform plan
 ```
 
-The plan will be similar to the previous local state example, but the state file will be stored in the Azure Storage Account rather than local, as shown in image below:
+Apply:
 
-![Terraform plan](/images/terraform-plan.png)
-
-## Terraform apply
-
-Run the following command to apply the Terraform configuration:
-
-```terraform
+```bash
 terraform apply
 ```
 
-Review the apply this time, remote state stored - but will deploy the similar resources as the local state example.
+Type `yes` when prompted.
 
-## Terraform destroy
+## Verify remote state
 
-Run the following command to destroy the Terraform configuration:
+After applying, check the storage account. Your state file now exists in Azure:
 
-```terraform
+```bash
+az storage blob list \
+  --account-name sttfstate12345 \
+  --container-name tfstate \
+  --output table
+```
+
+You'll see `demo.terraform.tfstate` in the container.
+
+View it in the [Azure Portal](https://portal.azure.com) under Storage Account > Containers > tfstate.
+
+## Test state locking
+
+Remote state includes automatic state locking. Try running two `terraform apply` commands simultaneously from different terminals:
+
+Terminal 1:
+```bash
+terraform apply
+```
+
+Terminal 2 (while first is still running):
+```bash
+terraform apply
+```
+
+The second command waits or fails with a lock error. This prevents concurrent modifications that could corrupt state.
+
+## Clean up
+
+Destroy the resource:
+
+```bash
 terraform destroy
 ```
 
-## Terraform destroy - remote state storage account
+The state file remains in Azure Storage but shows zero resources.
 
-Run the following command to destroy the remote state storage account:
+## Delete the storage account
 
-1. Edit the [variables](https://github.com/thomast1906/terraform-on-azure/tree/main/2-terraform-state/scripts/2-delete-terraform-storage.sh#L6)
-2. Run the script `./scripts/2-delete-terraform-storage.sh`
+When you're done, delete the storage account:
+
+```bash
+cd ../scripts
+./2-delete-terraform-storage.sh
+```
+
+Update the script variables to match your resource group name before running.
+
+## Key takeaways
+
+- Remote state enables team collaboration
+- Azure Storage provides state locking automatically
+- State files are encrypted and backed up
+- Blob versioning gives you state history
+- Use remote state for any shared or production infrastructure
