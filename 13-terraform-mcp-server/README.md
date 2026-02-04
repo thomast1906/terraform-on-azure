@@ -1,111 +1,144 @@
-# Use the Terraform MCP server
+# Terraform MCP Server
 
-The Terraform Model Context Protocol (MCP) server provides AI assistants with real-time access to Terraform documentation, provider details, and module information. This helps generate accurate, up-to-date Terraform code.
+Get real-time Terraform provider documentation, module details, and registry information directly in GitHub Copilot. The Terraform Model Context Protocol (MCP) server connects your AI assistant to the Terraform Registry.
 
-## What is MCP
+## What you get
 
-MCP (Model Context Protocol) is a standard way for AI assistants to connect to external data sources. The Terraform MCP server exposes the Terraform Registry as tools that AI can query.
+- **Provider docs**: Latest versions, capabilities, and resource examples
+- **Module search**: Find and inspect public/private modules
+- **Current info**: Always up-to-date from the live registry
+- **In-editor**: No context switching to browsers
 
-## Available capabilities
+## Setup
 
-The Terraform MCP server provides:
+This repo includes an MCP configuration at [.vscode/mcp.json](../.vscode/mcp.json). If you have GitHub Copilot with MCP support, it should load automatically.
 
-- Provider information, including latest versions, capabilities, and resource documentation
-- Module discovery for public and private modules, plus documentation and examples
-- Policy management for Terraform Cloud policies and requirements
+### Configuration
 
-## Setup in VS Code
-
-If you're using GitHub Copilot in VS Code, the Terraform MCP server may already be available. Check your MCP configuration:
-
-```bash
-cat ~/.vscode-insiders/extensions/ms-azuretools.vscode-azure-github-copilot-*/mcp-config.json
+```json
+{
+  "servers": {
+    "terraform": {
+      "command": "docker",
+      "args": [
+        "run", "-i", "--rm",
+        "-e", "TFE_TOKEN=${input:tfe_token}",
+        "-e", "TFE_ADDRESS=${input:tfe_address}",
+        "hashicorp/terraform-mcp-server:0.4.0"
+      ] 
+    }
+  }
+}
 ```
 
-Look for terraform-related MCP servers in the configuration.
+**Requirements:**
+- Docker installed and running
+- GitHub Copilot with MCP support
+- Optional: HCP Terraform token for private registry access
 
-## Using MCP with Copilot
+### Verify setup
 
-When working with Terraform, mention what you need:
+Ask Copilot:
+```
+"What's the latest version of the azurerm provider?"
+```
 
-**Get latest provider version:**
-> "What's the latest version of the Azure provider?"
+If you get a version number, MCP is working.
 
-**Find resource documentation:**
-> "Show me how to create an Azure Container Registry using the latest API"
+## Usage examples
 
-**Search for modules:**
-> "Find a module for Azure Key Vault"
+### Get provider versions
 
-**Get module details:**
-> "Show me the inputs for the Azure/vnet/azurerm module"
+```
+"What's the latest Azure provider version?"
+```
 
-The AI queries the MCP server automatically and provides current information.
+Returns current version for your `required_providers` block.
 
-## Example workflow
+### Resource documentation
 
-Here's how MCP helps when building Terraform configurations:
+```
+"Show me azurerm_kubernetes_cluster arguments"
+"How do I create an Azure Container Registry with geo-replication?"
+```
 
-### 1. Start with provider versions
+Gets current resource schema with examples.
 
-Ask: "What's the latest Azure provider version?"
+### Module discovery
 
-MCP returns the current version so you can set the provider constraint correctly.
+```
+"Find Azure networking modules"
+"Show inputs for Azure/vnet/azurerm module"
+```
 
-### 2. Find resource documentation
+Searches registry and retrieves module documentation.
 
-Ask: "Show me how to create an Azure Storage Account with current recommendations"
+### Capabilities check
 
-MCP fetches current documentation including new properties and recommended configurations.
+```
+"What resources are available in the azurerm provider?"
+"Does the AzureRM provider support Azure Container Apps?"
+```
 
-### 3. Discover modules
+Returns available resource types and data sources.
 
-Ask: "Find modules for Azure networking"
+## Workflow example
 
-MCP searches the registry and returns relevant modules with download counts and verification status.
+**1. Start a new configuration**
+```
+You: "Create an AKS cluster with the latest best practices"
+```
+Copilot queries MCP for:
+- Latest azurerm provider version
+- Current azurerm_kubernetes_cluster schema
+- Recommended settings and examples
 
-### 4. Get module details
+**2. Add a module**
+```
+You: "Find a verified module for Azure Key Vault"
+```
+Copilot searches the registry and gives you options with:
+- Module source path
+- Input variables
+- Usage examples
 
-Ask: "Show me the inputs for module Azure/vnet/azurerm"
+**3. Check compatibility**
+```
+You: "Does that module work with azurerm 4.0?"
+```
+Copilot checks the module's provider requirements.
 
-MCP retrieves the module's variables, outputs, and usage examples.
+## Troubleshooting
 
-## Benefits over manual lookup
+**MCP not responding:**
+- Check Docker is running: `docker ps`
+- Reload VS Code window
+- Check GitHub Copilot extension is updated
 
-- MCP queries live data from the Terraform Registry, so results are current.
-- Access to providers, modules, and their documentation in one place.
-- Works directly in your editor alongside your code.
-- Fewer context switches to web browsers or documentation sites.
+**Token errors:**
+- TFE_TOKEN is only needed for private registries
+- Leave blank for public registry only
+- Get token from https://app.terraform.io/app/settings/tokens
 
-## Best practices
+**Rate limits:**
+- Public registry limits apply
+- Use HCP Terraform token for higher limits
 
-- Ask for exact resource types or providers.
-	Example: "Latest azurerm provider documentation for azurerm_kubernetes_cluster"
-- Ask for working code samples.
-	Example: "Show me a complete example of Azure AKS with the network plugin"
-- Check that generated code uses appropriate provider versions.
-- Verify module compatibility with your provider version.
+## Without MCP
 
-## Limitations
-
-- MCP primarily accesses the public Terraform Registry; private module access depends on configuration.
-- Some Terraform Cloud/Enterprise features may require additional setup.
-- Heavy usage may hit registry API limits.
-
-## Alternative: Manual registry access
-
-If MCP isn't available, use the Terraform Registry directly:
-
+If MCP isn't available, use these directly:
 - Providers: https://registry.terraform.io/browse/providers
-- Modules: https://registry.terraform.io/browse/modules
-- Documentation: https://developer.hashicorp.com/terraform/docs
+- Modules: https://registry.terraform.io/browse/modules  
+- Docs: https://developer.hashicorp.com/terraform
+
+## Benefits
+
+✅ Always current documentation  
+✅ No manual registry searches  
+✅ Faster code generation  
+✅ Discover modules easily  
+✅ Verify compatibility quickly  
 
 ## Next steps
 
-With MCP-assisted development:
-1. Generate configurations faster
-2. Use current guidance automatically
-3. Discover relevant modules quickly
-4. Stay updated on new Azure resources
-
-Continue to the testing section to learn how to validate your Terraform configurations.
+Try asking Copilot to generate a complete Terraform configuration using the latest provider versions and modules. See [8-terraform-testing](../8-terraform-testing) to learn how to validate your code.
