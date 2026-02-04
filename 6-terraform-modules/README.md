@@ -306,4 +306,4 @@ terraform destroy
 - Document all inputs and outputs
 - Version your modules when sharing
 - Test modules before using in production
-- Don't over-abstract—simple is better
+- Don't over-abstract. Simple is better

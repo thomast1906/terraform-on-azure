@@ -10,19 +10,9 @@ MCP (Model Context Protocol) is a standard way for AI assistants to connect to e
 
 The Terraform MCP server provides:
 
-**Provider information:**
-- Latest provider versions
-- Provider capabilities (resources, data sources, functions)
-- Detailed resource and data source documentation
-
-**Module discovery:**
-- Search public and private modules
-- Get module documentation and examples
-- Latest module versions
-
-**Policy management:**
-- Search Terraform Cloud policies
-- Get policy details and requirements
+- Provider information, including latest versions, capabilities, and resource documentation
+- Module discovery for public and private modules, plus documentation and examples
+- Policy management for Terraform Cloud policies and requirements
 
 ## Setup in VS Code
 
@@ -60,11 +50,11 @@ Here's how MCP helps when building Terraform configurations:
 
 Ask: "What's the latest Azure provider version?"
 
-MCP returns the current version, ensuring your configuration uses up-to-date providers.
+MCP returns the current version so you can set the provider constraint correctly.
 
 ### 2. Find resource documentation
 
-Ask: "Show me how to create an Azure Storage Account with the latest best practices"
+Ask: "Show me how to create an Azure Storage Account with current recommendations"
 
 MCP fetches current documentation including new properties and recommended configurations.
 
@@ -82,35 +72,25 @@ MCP retrieves the module's variables, outputs, and usage examples.
 
 ## Benefits over manual lookup
 
-**Always current:** MCP queries live data from the Terraform Registry. No outdated documentation.
-
-**Comprehensive:** Access to all providers, modules, and their complete documentation.
-
-**Integrated:** Works directly in your editor alongside your code.
-
-**Fast:** No context switching to web browsers or documentation sites.
+- MCP queries live data from the Terraform Registry, so results are current.
+- Access to providers, modules, and their documentation in one place.
+- Works directly in your editor alongside your code.
+- Fewer context switches to web browsers or documentation sites.
 
 ## Best practices
 
-**Be specific:** Ask for exact resource types or providers.
-
-Example: "Latest azurerm provider documentation for azurerm_kubernetes_cluster"
-
-**Request examples:** Ask for working code samples.
-
-Example: "Show me a complete example of Azure AKS with the network plugin"
-
-**Verify versions:** Always check that generated code uses appropriate provider versions.
-
-**Check compatibility:** When using modules, verify they're compatible with your provider version.
+- Ask for exact resource types or providers.
+	Example: "Latest azurerm provider documentation for azurerm_kubernetes_cluster"
+- Ask for working code samples.
+	Example: "Show me a complete example of Azure AKS with the network plugin"
+- Check that generated code uses appropriate provider versions.
+- Verify module compatibility with your provider version.
 
 ## Limitations
 
-**Private registries:** MCP primarily accesses public Terraform Registry. Private module access depends on configuration.
-
-**Enterprise features:** Some Terraform Cloud/Enterprise features may require additional setup.
-
-**API rate limits:** Heavy usage may hit registry API limits.
+- MCP primarily accesses the public Terraform Registry; private module access depends on configuration.
+- Some Terraform Cloud/Enterprise features may require additional setup.
+- Heavy usage may hit registry API limits.
 
 ## Alternative: Manual registry access
 
@@ -124,7 +104,7 @@ If MCP isn't available, use the Terraform Registry directly:
 
 With MCP-assisted development:
 1. Generate configurations faster
-2. Use current best practices automatically
+2. Use current guidance automatically
 3. Discover relevant modules quickly
 4. Stay updated on new Azure resources
 

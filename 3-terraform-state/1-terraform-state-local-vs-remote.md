@@ -48,15 +48,11 @@ terraform {
 
 Remote state gives you:
 
-**State locking**: Prevents concurrent modifications. Multiple team members can't accidentally run `terraform apply` at the same time.
-
-**Collaboration**: Everyone on your team accesses the same state. Changes are visible immediately.
-
-**Security**: State files contain sensitive data. Azure Storage Account provides encryption, access controls, and audit logs.
-
-**Durability**: Azure Storage Account has built-in redundancy. Your state won't disappear if a laptop dies.
-
-**History**: Enable blob versioning to keep historical versions of your state.
+- State locking prevents concurrent modifications, so teammates do not run `terraform apply` at the same time.
+- Collaboration improves because everyone works from the same state and sees changes immediately.
+- Security improves with encryption, access controls, and audit logs in Azure Storage.
+- Durability improves with built-in redundancy.
+- History is available when blob versioning is enabled.
 
 ## When to use each
 

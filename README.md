@@ -1,6 +1,6 @@
 # Terraform on Azure
 
-Learn how to deploy infrastructure on Azure using Terraform - from the basics to production-ready configurations.
+Learn how to deploy infrastructure on Azure using Terraform, from the basics to production deployments.
 
 ## What you'll learn
 
@@ -154,9 +154,9 @@ cd 1-terraform-basics
 # 3. Follow the README to install Terraform and configure your environment
 ```
 
-You'll learn to install Terraform, set up VS Code, authenticate to Azure, and deploy your first resource group—all in section 1.
+Section 1 covers installing Terraform, setting up VS Code, authenticating to Azure, and deploying a first resource group.
 
-By section 3, you'll have deployed infrastructure with remote state. By section 13, you'll be using AI assistance to write Terraform code.
+Section 3 adds remote state. Section 13 covers AI assistance for Terraform.
 
 **Start here:** [1. Terraform basics](1-terraform-basics/) →
 
@@ -181,10 +181,10 @@ Most examples use free or low-cost resources. Always run `terraform destroy` whe
 - New testing approaches section with terraform test framework
 - Terraform import tutorial for existing resources
 - Pre-conditions and post-conditions for validation
-- Comprehensive Terraform functions guide with Azure examples
+- Terraform functions guide with Azure examples
 - State management commands (terraform state mv)
 - Rewrote all tutorials in step-by-step format
-- Updated all code examples with current best practices
+- Updated examples to match current provider behavior
 
 ## Next steps
 

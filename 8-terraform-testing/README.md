@@ -45,7 +45,7 @@ Success! 1 passed, 0 failed.
 
 Tests support two commands:
 
-**`plan`**: Runs `terraform plan` without deploying:
+`plan`: Runs `terraform plan` without deploying:
 ```hcl
 run "test_configuration" {
   command = plan
@@ -53,7 +53,7 @@ run "test_configuration" {
 }
 ```
 
-**`apply`**: Actually deploys infrastructure (integration test):
+`apply`: Actually deploys infrastructure (integration test):
 ```hcl
 run "test_deployment" {
   command = apply
@@ -563,15 +563,11 @@ Before deploying:
 
 ## Best practices
 
-**Test early:** Run validate and fmt on every file save.
-
-**Test often:** Include checks in pre-commit hooks and CI/CD.
-
-**Test realistically:** Use dev environments that mirror prod configuration.
-
-**Test destructively:** Ensure `terraform destroy` works cleanly.
-
-**Test idempotency:** Run apply twice—the second should show no changes.
+- Run `terraform validate` and `terraform fmt` on every file save.
+- Include checks in pre-commit hooks and CI/CD.
+- Use dev environments that mirror prod configuration.
+- Make sure `terraform destroy` works cleanly.
+- Run `terraform apply` twice; the second run should show no changes.
 
 ## Next steps
 

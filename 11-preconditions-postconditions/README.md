@@ -6,21 +6,18 @@ Catch configuration errors early with lifecycle validation rules. Check inputs b
 
 Conditions validate assumptions about your infrastructure. They run during plan and apply operations.
 
-**Pre-conditions**: Check inputs and dependencies before Terraform creates or modifies a resource.
+Pre-conditions check inputs and dependencies before Terraform creates or modifies a resource.
 
-**Post-conditions**: Verify outputs and resource state after Terraform creates or modifies a resource.
+Post-conditions verify outputs and resource state after Terraform creates or modifies a resource.
 
 Both fail the operation immediately if validation fails.
 
 ## Why use conditions
 
-**Fail fast**: Catch errors in plan phase instead of during apply.
-
-**Better error messages**: Explain what's wrong and how to fix it.
-
-**Enforce policies**: Require specific configurations (tags, security settings, naming patterns).
-
-**Validate assumptions**: Check that Azure regions support features, SKUs are compatible, resources exist.
+- Catch errors in plan phase instead of during apply.
+- Explain what's wrong and how to fix it with clear messages.
+- Require specific configurations (tags, security settings, naming patterns).
+- Check that Azure regions support features, SKUs are compatible, and resources exist.
 
 ## Pre-conditions
 
@@ -450,7 +447,7 @@ data "azurerm_resource_group" "existing" {
 
 ## Complete Azure example
 
-Full working example with comprehensive validation:
+Full working example with validation:
 
 ```terraform
 variable "environment" {
@@ -617,7 +614,7 @@ terraform apply \
 
 ## When to use conditions vs validation blocks
 
-**Variable validation blocks**: Validate individual variable values.
+Use variable validation blocks to check individual variable values.
 
 ```terraform
 variable "location" {
@@ -630,7 +627,7 @@ variable "location" {
 }
 ```
 
-**Pre-conditions**: Validate relationships between resources, check dependencies, enforce complex rules.
+Use pre-conditions to validate relationships between resources, check dependencies, and enforce complex rules.
 
 ```terraform
 resource "azurerm_resource_group" "example" {
@@ -648,20 +645,14 @@ resource "azurerm_resource_group" "example" {
 }
 ```
 
-Use both for comprehensive validation.
+Use both for broader validation.
 
 ## Best practices
 
-**Write clear error messages**: Explain what's wrong and how to fix it.
-
-**Validate early**: Use pre-conditions to catch errors in plan phase.
-
-**Don't over-validate**: Focus on critical requirements. Too many conditions make code hard to maintain.
-
-**Use locals for complex logic**: Keep condition expressions simple.
-
-**Document requirements**: Add comments explaining why validations exist.
-
-**Test failure cases**: Run terraform plan with invalid inputs to verify error messages are helpful.
-
-**Combine with variable validation**: Use variable validation blocks for simple checks, conditions for complex logic.
+- Write clear error messages that explain the fix.
+- Use pre-conditions to catch errors in plan phase.
+- Focus on critical requirements so validation stays maintainable.
+- Use locals for complex logic to keep condition expressions readable.
+- Add comments explaining why validations exist.
+- Run `terraform plan` with invalid inputs to verify error messages.
+- Combine variable validation blocks for simple checks and conditions for complex logic.

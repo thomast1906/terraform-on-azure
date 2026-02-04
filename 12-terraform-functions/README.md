@@ -694,29 +694,25 @@ terraform apply \
 
 ## Best practices
 
-**Use locals for complex expressions**: Don't repeat function calls. Calculate once in locals, reference everywhere.
-
-**Comment complex logic**: Explain what functions do, especially regex patterns.
-
-**Validate inputs**: Use `can()` to check if operations will succeed.
-
-**Keep it readable**: Break complex nested functions into multiple local values.
-
-**Test edge cases**: Try empty strings, very long strings, special characters.
+- Use locals for complex expressions so you do not repeat function calls.
+- Comment complex logic, especially regex patterns.
+- Use `can()` to validate inputs before applying transformations.
+- Break complex nested functions into multiple locals.
+- Test edge cases like empty strings, long strings, and special characters.
 
 ## Function reference
 
 Full list at [terraform.io/language/functions](https://www.terraform.io/language/functions).
 
 Common categories:
-- **String**: upper, lower, format, replace, regex, trim, join, split
-- **Collection**: length, concat, merge, flatten, contains, keys, values, lookup, slice
-- **Type**: tostring, tonumber, tobool, tolist, toset, tomap, can, try
-- **Encoding**: base64encode, jsonencode, yamlencode
-- **Filesystem**: file, fileexists, templatefile
-- **Date**: timestamp, formatdate
-- **Hash**: md5, sha256, uuid
-- **Network**: cidrhost, cidrsubnet
+- String: upper, lower, format, replace, regex, trim, join, split
+- Collection: length, concat, merge, flatten, contains, keys, values, lookup, slice
+- Type: tostring, tonumber, tobool, tolist, toset, tomap, can, try
+- Encoding: base64encode, jsonencode, yamlencode
+- Filesystem: file, fileexists, templatefile
+- Date: timestamp, formatdate
+- Hash: md5, sha256, uuid
+- Network: cidrhost, cidrsubnet
 
 Explore them all to simplify your Terraform code.
 
@@ -891,15 +887,11 @@ locals {
 
 ### MCP advantages for functions
 
-**Instant documentation**: No need to search terraform.io for each function.
-
-**Context-aware examples**: Get Azure-specific usage patterns.
-
-**Error prevention**: Validate syntax before running terraform plan.
-
-**Discovery**: Find the right function for your task without knowing it exists.
-
-**Complex combinations**: Learn how to chain multiple functions together.
+- Get function documentation without leaving the editor.
+- Request Azure-specific usage patterns.
+- Validate syntax before running `terraform plan`.
+- Discover the right function even if you do not know its name.
+- Learn how to chain multiple functions together.
 
 ### Try it
 
@@ -931,19 +923,15 @@ You've completed all core Terraform on Azure tutorials. You now know how to:
 
 ### Keep learning
 
-**Build a real project**: Deploy a complete application stack (VMs, networking, storage, databases).
-
-**Explore Terraform modules registry**: [registry.terraform.io/browse/modules](https://registry.terraform.io/browse/modules?provider=azurerm)
-
-**Learn CI/CD**: Integrate Terraform with GitHub Actions or Azure DevOps.
-
-**Study Azure Landing Zones**: Enterprise-grade architecture patterns.
-
-**Join communities**: 
+- Build a real project (VMs, networking, storage, databases).
+- Explore the Terraform modules registry: [registry.terraform.io/browse/modules](https://registry.terraform.io/browse/modules?provider=azurerm)
+- Integrate Terraform with GitHub Actions or Azure DevOps.
+- Study Azure Landing Zones for enterprise patterns.
+- Join communities:
 - [Terraform Discord](https://discord.gg/terraform)
 - [HashiCorp Forum](https://discuss.hashicorp.com/c/terraform-core)
 - [Azure Terraform GitHub](https://github.com/Azure/terraform-azurerm-examples)
 
-**Keep experimenting**: The best way to learn is by building.
+Keep experimenting. The best way to learn is by building.
 
 Return to [main README](../README.md) for the complete learning path.

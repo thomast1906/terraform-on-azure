@@ -129,9 +129,9 @@ Congratulations! You just deployed and destroyed Azure infrastructure with Terra
 
 After completing this section:
 
-1. **Practice**: Modify the examples. Try different resource names and locations.
-2. **Experiment**: Add tags to resources, try different Azure regions.
-3. **Continue**: Move to [section 2: Variables](../2-terraform-variables/) to make your code reusable.
+1. Practice by modifying the examples. Try different resource names and locations.
+2. Experiment by adding tags to resources and using different Azure regions.
+3. Continue to [section 2: Variables](../2-terraform-variables/) to make your code reusable.
 
 ## Getting help
 
