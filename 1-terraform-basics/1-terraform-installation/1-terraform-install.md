@@ -1,21 +1,54 @@
-# Terraform installation - How to
+# Install Terraform
 
-Lets kick-off with the installation for Terraform
+You need Terraform installed on your machine to follow this tutorial. Here's how to get it.
 
 ## Windows
-Recommend to use the Windows Package Manager [Chocolatey](https://chocolatey.org/), its great!
-- Once you have this configured, run the below:
+
+Use the Windows Package Manager for the fastest installation:
+
+```powershell
+winget install Hashicorp.Terraform
+```
+
+Alternatively, if you use Chocolatey:
+
 ```powershell
 choco install terraform
 ```
 
-## Mac
-Recommend to use the Mac Package Manager [HomeBrew](https://brew.sh/)
-- Once you have this configured, run the below:
+## macOS
+
+Use Homebrew to install Terraform:
+
 ```bash
-# Install the Hashicorp tap
+# Add the HashiCorp tap
 brew tap hashicorp/tap
 
 # Install Terraform
 brew install hashicorp/tap/terraform
 ```
+
+## Linux
+
+Use your distribution's package manager. For Ubuntu/Debian:
+
+```bash
+# Add HashiCorp GPG key
+wget -O- https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+
+# Add HashiCorp repository
+echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+
+# Update and install
+sudo apt update && sudo apt install terraform
+```
+
+## Verify installation
+
+Check that Terraform installed correctly:
+
+```bash
+terraform version
+```
+
+You should see output showing the Terraform version. You're ready to start deploying infrastructure on Azure.

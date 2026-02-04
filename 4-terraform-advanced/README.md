@@ -8,49 +8,42 @@ In this section we will be looking at some more advanced Terraform concepts:
 - Conditional Expressions
 - Dynamic Blocks
 
-# Pre-requisites
+## Prerequisites
 
-1. Ensure remote storage account is configured for Terraform state. Each of the above, will contain a Terraform configuration that will be used to deploy resources to Azure to show its concept with a new state file for each.
+1. Set up a remote state storage account before starting this section. Each example uses its own state key.
 
-To do this, follow the steps in the [Terraform Remote State Deploy](https://github.com/thomast1906/terraform-on-azure/tree/main/2-terraform-state/3-terraform-remote-state-deploy.md) section.
+Follow the steps in [Terraform Remote State Deploy](../3-terraform-state/3-terraform-remote-state-deploy.md).
 
-Please note, I will be using storage account name `deployfirsttamopssa` for the remote state storage account. You will need to change this to your own storage account name.
-
-Each will have providers.tf, to which you change the storage account name to your own. As shown below:
+Each example includes a `providers.tf`. Update the backend values to match your resource group, storage account, and container:
 
 ```terraform
-
 terraform {
-   backend "azurerm" {
-        resource_group_name  = "deploy-first-rg"
-        storage_account_name = "deployfirsttamopssa"
-        container_name       = "tfstate"
-        key                  = "terraform.tfstate"
-    }
+  backend "azurerm" {
+    resource_group_name  = "rg-terraform-state"
+    storage_account_name = "sttfstate12345"
+    container_name       = "tfstate"
+    key                  = "terraform.tfstate"
+  }
 
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "3.44.1"
+      version = "~> 4.0"
     }
   }
-
 }
 
 provider "azurerm" {
   features {}
 }
-    
-    ```
+```
 
-2. Update variables.tf with your own values. Example below shown as part of [1-depends-on](https://github.com/thomast1906/terraform-on-azure/tree/main/4-terraform-advanced/1-depends-on/1-depends-on-example/variables.tf)
+2. Update `variables.tf` with your own values. Example: [1-depends-on/terraform/variables.tf](./1-depends-on/terraform/variables.tf)
 
 ```terraform
-
 variable "resource_group_name" {
-  type = string
+  type    = string
   default = "tamopsrg"
 }
-    
-    ```
+```
 

@@ -1,119 +1,200 @@
-# Terraform secret management in Azure
+# Manage secrets with Azure Key Vault
 
-Deploying resources in Azure, you will often need to pass sensitive information to the resources. This could be a password, a certificate or a key. In this tutorial, we will look at how to manage secrets in Terraform using an Azure Key Vault.
+Store sensitive values in Azure Key Vault instead of putting them directly in your Terraform code. This keeps secrets secure and auditable.
 
-## Terraform secret management in Azure - pros
+## Why use Key Vault
 
-- Recommended for storing sensitive information
-- Recommended for storing information that is not to be shared
-
-## Terraform secret management in Azure - cons
-
-- Requires additional configuration
-
-## Terraform secret management in Azure - example
-
-In this example, we will be creating a resource group in Azure. We will be using an Azure Key Vault to store the name of the storage account.
-
-### Terraform secret management - example - variables.tf
-
-Variable `resource_group_name` is of type `string` and has a default value of `tamopsrg`.
+Don't hardcode secrets:
 
 ```terraform
-
-variable "resource_group_name" {
-  type = string
-  default = "tamopsrg"
+# DON'T DO THIS
+resource "azurerm_linux_virtual_machine" "example" {
+  admin_password = "SuperSecret123!"  # Exposed in code and state
 }
-
 ```
 
-### Terraform secret management in Azure - example - main.tf
+Use Key Vault instead. Secrets stay encrypted, access is logged, and you can rotate values without changing code.
 
-Storage Account name is stored in a Key Vault. The Key Vault is created in the same Terraform configuration. The Key Vault is created with an access policy that allows the current user to get the secret. The secret is then used to create the storage account.
+## Create a Key Vault
 
 ```terraform
+data "azurerm_client_config" "current" {}
 
-resource "azurerm_resource_group" "rg" {
-  name     = var.resource_group_name
+resource "azurerm_resource_group" "example" {
+  name     = "rg-keyvault-demo"
   location = "uksouth"
 }
 
-resource "azurerm_key_vault" "kv" {
-  name                = "tamopskv"
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
-  tenant_id           = data.azurerm_client_config.current.tenant_id
-  sku_name            = "standard"
+resource "azurerm_key_vault" "example" {
+  name                       = "kv-demo-${random_string.suffix.result}"
+  location                   = azurerm_resource_group.example.location
+  resource_group_name        = azurerm_resource_group.example.name
+  tenant_id                  = data.azurerm_client_config.current.tenant_id
+  sku_name                   = "standard"
+  purge_protection_enabled   = true
+  soft_delete_retention_days = 7
 
-  access_policy {
-    tenant_id = data.azurerm_client_config.current.tenant_id
-    object_id = data.azurerm_client_config.current.object_id
-
-    secret_permissions = [
-      "Get",
-      "List",
-      "Set",
-      "Delete"
-    ]
-  }
+  # Use RBAC for access control (recommended)
+  enable_rbac_authorization = true
 }
 
-resource "azurerm_key_vault_secret" "sa" {
-  name         = "saname"
-  value        = "tamopsstoragekv"
-  key_vault_id = azurerm_key_vault.kv.id
+resource "random_string" "suffix" {
+  length  = 8
+  special = false
+  upper   = false
 }
-
-data "azurerm_key_vault_secret" "sa" {
-  name         = "saname"
-  key_vault_id = azurerm_key_vault.kv.id
-  depends_on = [
-    azurerm_key_vault_secret.sa
-  ]
-}
-
-resource "azurerm_storage_account" "sa" {
-  name                     = data.azurerm_key_vault_secret.sa.value
-  resource_group_name      = azurerm_resource_group.rg.name
-  location                 = azurerm_resource_group.rg.location
-  account_tier             = "Standard"
-  account_replication_type = "LRS"
-
-  depends_on = [
-    azurerm_resource_group.rg
-  ]
-}
-
 ```
 
-Notice the use of data keyvault secret to get the secret from the Key Vault to be used as name of the storage account.
+## Grant yourself access
+
+Assign the Key Vault Secrets Officer role:
 
 ```terraform
-data "azurerm_key_vault_secret" "sa" {
-  name         = "saname"
-  key_vault_id = azurerm_key_vault.kv.id
-  depends_on = [
-    azurerm_key_vault_secret.sa
-  ]
+resource "azurerm_role_assignment" "example" {
+  scope                = azurerm_key_vault.example.id
+  role_definition_name = "Key Vault Secrets Officer"
+  principal_id         = data.azurerm_client_config.current.object_id
 }
-
-resource "azurerm_storage_account" "sa" {
-  name                     = data.azurerm_key_vault_secret.sa.value
-  resource_group_name      = azurerm_resource_group.rg.name
-  location                 = azurerm_resource_group.rg.location
-  account_tier             = "Standard"
-  account_replication_type = "LRS"
-
-  depends_on = [
-    azurerm_resource_group.rg
-  ]
-}
-
 ```
 
-### Run example
+## Store a secret
 
-You can now run the example found in this section.
+```terraform
+resource "azurerm_key_vault_secret" "db_password" {
+  name         = "database-password"
+  value        = random_password.db_password.result
+  key_vault_id = azurerm_key_vault.example.id
+  
+  depends_on = [azurerm_role_assignment.example]
+}
 
-Run Terraform from [here](https://github.com/thomast1906/terraform-on-azure/tree/main/5-secret-management-azure/terraform)
+resource "random_password" "db_password" {
+  length           = 32
+  special          = true
+  override_special = "!#$%&*()-_=+[]{}<>:?"
+}
+```
+
+## Read a secret
+
+```terraform
+data "azurerm_key_vault_secret" "db_password" {
+  name         = "database-password"
+  key_vault_id = azurerm_key_vault.example.id
+  
+  depends_on = [azurerm_key_vault_secret.db_password]
+}
+
+resource "azurerm_mysql_flexible_server" "example" {
+  name                   = "mysql-demo"
+  resource_group_name    = azurerm_resource_group.example.name
+  location               = azurerm_resource_group.example.location
+  administrator_login    = "adminuser"
+  administrator_password = data.azurerm_key_vault_secret.db_password.value
+  sku_name               = "B_Standard_B1s"
+  version                = "8.0.21"
+}
+```
+
+## Use existing secrets
+
+Reference secrets from an existing Key Vault:
+
+```terraform
+data "azurerm_key_vault" "existing" {
+  name                = "kv-prod"
+  resource_group_name = "rg-shared"
+}
+
+data "azurerm_key_vault_secret" "api_key" {
+  name         = "api-key"
+  key_vault_id = data.azurerm_key_vault.existing.id
+}
+
+resource "azurerm_app_configuration_key" "example" {
+  configuration_store_id = azurerm_app_configuration.example.id
+  key                    = "ApiKey"
+  value                  = data.azurerm_key_vault_secret.api_key.value
+}
+```
+
+## Mark outputs as sensitive
+
+Prevent secrets from appearing in logs:
+
+```terraform
+output "database_password" {
+  value     = data.azurerm_key_vault_secret.db_password.value
+  sensitive = true
+}
+```
+
+Terraform hides the value in output:
+
+```
+Outputs:
+
+database_password = <sensitive>
+```
+
+## Store certificates
+
+```terraform
+resource "azurerm_key_vault_certificate" "example" {
+  name         = "app-cert"
+  key_vault_id = azurerm_key_vault.example.id
+
+  certificate_policy {
+    issuer_parameters {
+      name = "Self"
+    }
+
+    key_properties {
+      exportable = true
+      key_size   = 2048
+      key_type   = "RSA"
+      reuse_key  = true
+    }
+
+    secret_properties {
+      content_type = "application/x-pkcs12"
+    }
+
+    x509_certificate_properties {
+      key_usage = [
+        "cRLSign",
+        "dataEncipherment",
+        "digitalSignature",
+        "keyAgreement",
+        "keyCertSign",
+        "keyEncipherment",
+      ]
+
+      subject            = "CN=example.com"
+      validity_in_months = 12
+    }
+  }
+  
+  depends_on = [azurerm_role_assignment.example]
+}
+```
+
+## Try it yourself
+
+```bash
+cd 5-secret-management-azure/terraform
+terraform init
+terraform validate
+terraform plan
+terraform apply
+terraform destroy
+```
+
+## Best practices
+
+- Enable purge protection in production
+- Use RBAC instead of access policies
+- Store Terraform state remotely (see section 3)
+- Mark secret variables as sensitive
+- Rotate secrets regularly
+- Audit Key Vault access logs

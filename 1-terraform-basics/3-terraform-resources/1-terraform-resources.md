@@ -1,40 +1,79 @@
-# Terraform Resources
+# Resources and data sources
 
-The primary deployments of Terraform is doing using one or more resources. They are the most commonly used component within Terraform. Each resource block will destroy at least one Azure resource. Resource blocks include virtual machines, virtual networks, resource groups etc.
+Resources are the building blocks of your infrastructure. Each resource block defines one piece of your Azure environment.
 
-## Resource example
+## Create a resource
 
-The below contains a resource called `rg` that uses the terraform resource `azurerm_resource_group` to create an Azure Resource Group called `tamops` in region `UK South`
+Here's a resource that creates an Azure resource group:
 
 ```terraform
 resource "azurerm_resource_group" "rg" {
-  name     = "tamops"
-  location = "UK South"
+  name     = "rg-terraform-demo"
+  location = "uksouth"
 }
 ```
 
-Read further on resource usage [here](https://developer.hashicorp.com/terraform/language/resources/syntax)
+The structure is:
+- `resource` keyword
+- Resource type in quotes: `"azurerm_resource_group"`
+- Local name in quotes: `"rg"` (you use this to reference the resource elsewhere)
+- Block containing the resource properties
 
-## Data source example
+## Reference a resource
 
-If the above Azure Resource Group `tamops` has already been created previously or within another Terraform deployment, utilising the Data source - you can make reference to the resource group.
-
-The below references the data resource `azurerm_resource_group` `rg` to deploy Azure Storage Account `tamopsstorage` into.
-- notice the reference of `resource_group_name` & `location` is using the data reference of Resource Group?
+You can reference one resource from another:
 
 ```terraform
-data "azurerm_resource_group" "rg" {
-  name = "tamops"
+resource "azurerm_resource_group" "rg" {
+  name     = "rg-terraform-demo"
+  location = "uksouth"
 }
 
 resource "azurerm_storage_account" "sa" {
-  name                     = "tamopsstorage"
-  resource_group_name      = data.azurerm_resource_group.rg.name
-  location                 = data.azurerm_resource_group.rg.location
+  name                     = "sttfdemo${random_string.suffix.result}"
+  resource_group_name      = azurerm_resource_group.rg.name
+  location                 = azurerm_resource_group.rg.location
   account_tier             = "Standard"
   account_replication_type = "LRS"
 }
+
+resource "random_string" "suffix" {
+  length  = 8
+  special = false
+  upper   = false
 }
 ```
 
-Each resource and data resource has various outputs available, [here](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/resource_group.html#attributes-reference) shows the outputs available for the above data resource.
+The storage account references the resource group using `azurerm_resource_group.rg.name` and `azurerm_resource_group.rg.location`. Terraform automatically understands the dependency.
+
+## Use a data source
+
+Data sources let you reference existing resources that Terraform doesn't manage. Use them when you need information about resources created outside Terraform:
+
+```terraform
+data "azurerm_resource_group" "existing" {
+  name = "rg-existing"
+}
+
+resource "azurerm_storage_account" "sa" {
+  name                     = "sttfdemo${random_string.suffix.result}"
+  resource_group_name      = data.azurerm_resource_group.existing.name
+  location                 = data.azurerm_resource_group.existing.location
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
+}
+
+resource "random_string" "suffix" {
+  length  = 8
+  special = false
+  upper   = false
+}
+```
+
+The data source queries Azure for the existing resource group. You access its properties with `data.azurerm_resource_group.existing.name`.
+
+## Find available properties
+
+Every resource and data source has documented properties. Check the [Azure Provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs) to see what's available.
+
+For example, the [azurerm_resource_group data source](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/resource_group) exposes properties like `name`, `location`, `tags`, and `id`.

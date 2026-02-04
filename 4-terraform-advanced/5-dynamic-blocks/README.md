@@ -1,56 +1,167 @@
-# Terraform Dynamic Blocks
+# Use dynamic blocks
 
-## Introduction
+Dynamic blocks generate repeated nested blocks within a resource. Use them when you need multiple similar nested blocks with different values.
 
-Dynamic blocks are a new feature in Terraform 0.12 that allow you to create dynamic blocks of configuration within your Terraform configuration files. This is useful when you want to create a block of configuration that is repeated multiple times, but with different values for each instance.
+## Basic dynamic blocks
 
-## Terraform Dynamic Blocks - pros
-
-- Allows you to create multiple resources in a single resource block
-
-## Terraform Dynamic Blocks - cons
-
-- Requires additional configuration
-
-## Terraform Dynamic Blocks - example
-
-In this example, we will be creating a resource group in Azure. We will be using the `dynamic` argument to create multiple resource groups.
-
-### Terraform Dynamic Blocks - example - variables.tf
-
-Creating variable files is a best practice, this allows you to keep all of your variables in one place.
-
-Variable `resource_group_names` is of type `list(string)` and has a default value of `["tamopsrg", "tamopsrg2"]`.
+Some resources accept repeated nested blocks. Network security groups accept multiple security rules:
 
 ```terraform
+resource "azurerm_network_security_group" "example" {
+  name                = "nsg-demo"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
 
-variable "resource_group_names" {
-  type = list(string)
-  default = ["tamopsrg", "tamopsrg2"]
+  security_rule {
+    name                       = "allow-ssh"
+    priority                   = 100
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "22"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+  security_rule {
+    name                       = "allow-https"
+    priority                   = 101
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "443"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
 }
-
 ```
 
-### Terraform Dynamic Blocks - example - main.tf
-
-In this example, we are creating a resource group. We are using the dynamic argument to create multiple resource groups.
+This works but gets repetitive. Use a dynamic block instead:
 
 ```terraform
+variable "security_rules" {
+  description = "Security rules for NSG"
+  type = list(object({
+    name                       = string
+    priority                   = number
+    direction                  = string
+    access                     = string
+    protocol                   = string
+    source_port_range          = string
+    destination_port_range     = string
+    source_address_prefix      = string
+    destination_address_prefix = string
+  }))
+  default = [
+    {
+      name                       = "allow-ssh"
+      priority                   = 100
+      direction                  = "Inbound"
+      access                     = "Allow"
+      protocol                   = "Tcp"
+      source_port_range          = "*"
+      destination_port_range     = "22"
+      source_address_prefix      = "*"
+      destination_address_prefix = "*"
+    },
+    {
+      name                       = "allow-https"
+      priority                   = 101
+      direction                  = "Inbound"
+      access                     = "Allow"
+      protocol                   = "Tcp"
+      source_port_range          = "*"
+      destination_port_range     = "443"
+      source_address_prefix      = "*"
+      destination_address_prefix = "*"
+    }
+  ]
+}
 
-resource "azurerm_resource_group" "rg" {
-  dynamic "name" {
-    for_each = var.resource_group_names
+resource "azurerm_network_security_group" "example" {
+  name                = "nsg-demo"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+
+  dynamic "security_rule" {
+    for_each = var.security_rules
     content {
-      name     = name.value
-      location = "uksouth"
+      name                       = security_rule.value.name
+      priority                   = security_rule.value.priority
+      direction                  = security_rule.value.direction
+      access                     = security_rule.value.access
+      protocol                   = security_rule.value.protocol
+      source_port_range          = security_rule.value.source_port_range
+      destination_port_range     = security_rule.value.destination_port_range
+      source_address_prefix      = security_rule.value.source_address_prefix
+      destination_address_prefix = security_rule.value.destination_address_prefix
     }
   }
 }
-
 ```
 
-### Run example
+The dynamic block:
+- Uses `for_each` to iterate over a collection
+- Has a label matching the nested block name (`security_rule`)
+- Contains a `content` block defining the nested block structure
+- References values with `security_rule.value`
 
-You can now run the example found in this section.
+## Simpler example with maps
 
-Run Terraform from [here](https://github.com/thomast1906/terraform-on-azure/tree/main/4-terraform-advanced/5-dynamic-blocks/terraform)
+```terraform
+variable "allowed_ports" {
+  description = "Ports to allow"
+  type        = map(number)
+  default = {
+    ssh   = 22
+    http  = 80
+    https = 443
+  }
+}
+
+resource "azurerm_network_security_group" "example" {
+  name                = "nsg-demo"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+
+  dynamic "security" {
+    for_each = var.allowed_ports
+    content {
+      name                       = "allow-${security_rule.key}"
+      priority                   = 100 + security_rule.value
+      direction                  = "Inbound"
+      access                     = "Allow"
+      protocol                   = "Tcp"
+      source_port_range          = "*"
+      destination_port_range     = security_rule.value
+      source_address_prefix      = "*"
+      destination_address_prefix = "*"
+    }
+  }
+}
+```
+
+## When to use dynamic blocks
+
+Use dynamic blocks when:
+- A resource needs multiple similar nested blocks
+- The number of blocks varies based on input
+- Configuration comes from variables or data sources
+
+Don't use dynamic blocks when:
+- You have a fixed, small number of blocks (explicit blocks are clearer)
+- The blocks are significantly different from each other
+- It makes the code harder to read
+
+## Try it yourself
+
+```bash
+cd 4-terraform-advanced/5-dynamic-blocks/terraform
+terraform init
+terraform validate
+terraform plan
+terraform apply
+terraform destroy
+```

@@ -1,59 +1,85 @@
-# Terraform Basic Commands
+# Core Terraform commands
 
-Lets look at the basic commands you shuld know to begin working with and deploying Terraform. Throughout I may add some further but to begin, have a look at understanding of these!
+You'll use these commands constantly. They form the standard workflow for deploying infrastructure.
 
-## Terraform Version
-
-Check the version of Terraform you are running using: `terraform -v`
-
-```bash
-terraform -v 
-```
-
-## Terraform Init
-
-Terraform init is used to initialise terarform and prepare your working directory and downtime the relevant providers etc.
+## Initialize your workspace
 
 ```bash
 terraform init
 ```
 
-## Terraform Validate
+This downloads provider plugins and sets up your backend. Run it once when you start a new project, or when you add new providers.
 
-A great command to have, validates the terraform configuration in the current directory. Great to use in terms of checking syntax and configuration is correct.
+## Check your syntax
 
 ```bash
 terraform validate
 ```
 
-## Terraform Plan
+Validates your configuration files. Use this to catch syntax errors before running `plan`.
 
-Creates and shows a Plan of your Terraform configuration, this includes additions, updates and removals.
+## Preview changes
 
 ```bash
 terraform plan
 ```
 
-## Terraform apply
+Shows what Terraform will create, update, or delete. Always run this before applying changes. The output uses symbols:
 
-Applies the Terraform configuration, in this case - it will be applying Terraform configuration that will deploy into Azure.
+- `+` creates a new resource
+- `~` modifies an existing resource
+- `-` deletes a resource
+- `-/+` replaces a resource (deletes then recreates)
+
+## Apply changes
 
 ```bash
 terraform apply
 ```
 
-## Terraform Destroy
+Applies your configuration to Azure. Terraform shows you the plan and asks for confirmation. Type `yes` to proceed.
 
-Used to destroy a Terraform configuration, when you run this command successfully - it will also destroy the resources in Azure.
+To skip the confirmation prompt:
+
+```bash
+terraform apply -auto-approve
+```
+
+Use auto-approve only in CI/CD pipelines or when you're certain about the changes.
+
+## Destroy resources
 
 ```bash
 terraform destroy
 ```
 
-## Terraform Format
+Deletes all resources Terraform manages. Use this to clean up when you're done testing.
 
-Formats current directory with Terraform/HCL standards.
+## Format your code
 
 ```bash
 terraform fmt
 ```
+
+Formats all `.tf` files in your directory to match Terraform style conventions. Run this before committing code.
+
+## Check version
+
+```bash
+terraform version
+```
+
+Shows your Terraform version. Useful when troubleshooting or confirming you're on the latest release.
+
+## Standard workflow
+
+Here's the typical sequence you'll follow:
+
+1. Write your configuration in `.tf` files
+2. Run `terraform init` (only needed once)
+3. Run `terraform validate` to check for errors
+4. Run `terraform plan` to preview changes
+5. Run `terraform apply` to deploy
+6. Run `terraform destroy` when you're done
+
+Always run `validate` before `plan`, and always run `plan` before `apply`.
