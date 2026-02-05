@@ -1,4 +1,7 @@
-# Terraform Variables
+# This content moved
 
-A guide on how to use variables in Terraform.
+This section moved to the new course structure.
 
+Go to: ../07-variables/
+
+Course summary: ../SUMMARY.md

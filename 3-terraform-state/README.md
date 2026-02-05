@@ -1,10 +1,7 @@
-# Terraform Installation
+# This content moved
 
-The purpose of this tutorial is to deploy an example Terraform configuration to Azure. Firstly, using a local state and then configuring a remote state.
+This section moved to the new course structure.
 
-## Prerequisites
+Go to: ../08-state-local/
 
-- Azure Subscription
-- Terraform installated
-- Visual Studio Code (Recommended)
-- Azure CLI & logged into Azure
+Course summary: ../SUMMARY.md
