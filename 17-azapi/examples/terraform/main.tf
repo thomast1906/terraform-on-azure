@@ -4,8 +4,8 @@ resource "azurerm_resource_group" "rg" {
 }
 
 resource "azapi_resource" "acr" {
-  location  = azurerm_resource_group.rg.name
-  type      = "Microsoft.ContainerRegistry/registries@2020-11-01-preview"
+  location  = azurerm_resource_group.rg.location
+  type      = "Microsoft.ContainerRegistry/registries@2023-07-01"
   name      = var.acr_name
   parent_id = azurerm_resource_group.rg.id
   body = jsonencode({
