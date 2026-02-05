@@ -1,194 +1,96 @@
 # Terraform on Azure
 
-Learn how to deploy infrastructure on Azure using Terraform, from the basics to production deployments.
+A step-by-step course for deploying and managing Azure infrastructure with Terraform. Learn from basics to advanced patterns through hands-on examples.
 
-## What you'll learn
+## Start here
 
-This tutorial takes you from zero to deploying real Azure infrastructure with Terraform. You'll learn:
+Begin with [Lesson 01: Introduction](01-introduction/)
 
-- How to install and configure Terraform
-- Core Terraform concepts and commands
-- Managing state locally and remotely in Azure
-- Advanced techniques like loops and conditionals
-- Secret management with Azure Key Vault
-- Building reusable modules
-- Using the AzAPI provider for new features
-- Testing your configurations with terraform test framework
-- Importing existing Azure resources
-- State management commands for refactoring
-- Pre/post-condition validation for fail-fast patterns
-- Built-in Terraform functions for data manipulation
-- AI-assisted development with Terraform MCP server
+## Course outline
+
+### Getting Started
+- [01. Introduction](01-introduction/) - Get familiar with Terraform and Infrastructure as Code
+- [02. Install Terraform](02-installation/) - Set up Terraform on your machine
+- [03. Set up VS Code](03-vscode-setup/) - Configure your development environment
+- [04. Core Terraform commands](04-core-commands/) - Learn init, plan, apply, destroy
+- [05. Resources and data sources](05-resources-and-data/) - Create and query Azure resources
+- [06. Azure provider setup](06-azure-provider/) - Configure authentication and providers
+
+### Variables and State
+- [07. Variables](07-variables/) - Make configurations reusable with variables
+- [08. State: local](08-state-local/) - Understand Terraform state management
+- [09. State: remote](09-state-remote/) - Store state in Azure Storage for teams
+
+### Advanced Patterns
+- [10. Advanced: depends_on](10-advanced-dependencies/) - Control resource dependencies
+- [11. Advanced: for_each](11-advanced-for-each/) - Create multiple similar resources
+- [12. Advanced: count](12-advanced-count/) - Create multiple identical resources
+- [13. Advanced: conditionals](13-advanced-conditionals/) - Make configuration decisions
+- [14. Advanced: dynamic blocks](14-advanced-dynamic-blocks/) - Generate nested blocks
+
+### Production Best Practices
+- [15. Secret management](15-secret-management/) - Secure secrets with Azure Key Vault
+- [16. Modules](16-modules/) - Build reusable infrastructure components
+- [17. AzAPI provider](17-azapi/) - Use day-one Azure resources
+- [18. Testing](18-testing/) - Validate configurations with terraform test
+
+### Workflow and Operations
+- [19. Import](19-import/) - Bring existing Azure resources under Terraform
+- [20. State commands](20-state-commands/) - Inspect and manage state
+- [21. Pre- and post-conditions](21-pre-post-conditions/) - Add validation to resources
+- [22. Terraform functions](22-functions/) - Transform and manipulate data
+- [23. Terraform MCP server](23-mcp-server/) - Use AI assistance with Terraform
+
+### Course Completion
+- [24. Cleanup](24-cleanup/) - Remove all Azure resources and avoid charges
+
+## What you will learn
+
+- Terraform fundamentals: core concepts, workflow, and Azure provider
+- State management: local and remote state with Azure Storage backend
+- Advanced patterns: resource dependencies, loops, conditionals, dynamic blocks
+- Production practices: secret management, testing, modules, validation
+- Operations: import existing resources, state manipulation, troubleshooting
+- Modern tooling: AzAPI provider, Terraform test framework, AI assistance
 
 ## Prerequisites
 
-- [Azure account](https://azure.microsoft.com/en-us/free/) (free tier works fine)
-- A code editor (VS Code recommended)
-- Basic command line knowledge
-- No Terraform experience required
+- Azure subscription ([free account](https://azure.microsoft.com/free/))
+- Basic command-line knowledge
+- Understanding of cloud infrastructure concepts
 
-## Tutorial structure
+## How the course is structured
 
-Work through these sections in order:
+- 24 progressive lessons from basics to advanced topics and cleanup
+- Each lesson has a `README.md` with explanations and steps
+- Hands-on examples in `examples/` directories with working Terraform code
+- Examples use azurerm 4.0+ with latest provider features
+- Lesson 24 provides scripts to clean up all resources and avoid charges
 
-### 1. Terraform basics
-- [Install Terraform](1-terraform-basics/1-terraform-installation/1-terraform-install.md)
-- [Set up VS Code](1-terraform-basics/1-terraform-installation/2-vscode-install.md)
-- [Core commands](1-terraform-basics/2-terraform-commands/1-terraform-commands.md)
-- [Resources and data sources](1-terraform-basics/3-terraform-resources/1-terraform-resources.md)
-- [Configure the Azure provider](1-terraform-basics/4-terraform-azure-provider/1-azure-provider.md)
-
-### 2. Variables
-- [Input variables](2-terraform-variables/1-terraform-variables.md)
-- [Variable files](2-terraform-variables/2-terraform-tfvars.md)
-- [Local values](2-terraform-variables/3-terraform-local-variables.md)
-
-### 3. State management
-- [Local vs remote state](3-terraform-state/1-terraform-state-local-vs-remote.md)
-- [Deploy with local state](3-terraform-state/2-terraform-local-state-deploy.md)
-- [Deploy with remote state](3-terraform-state/3-terraform-remote-state-deploy.md)
-
-### 4. Advanced techniques
-- [Resource dependencies](4-terraform-advanced/1-depends-on/)
-- [for_each loops](4-terraform-advanced/2-for-each/)
-- [Count loops](4-terraform-advanced/3-count/)
-- [Conditional expressions](4-terraform-advanced/4-conditional-expressions/)
-- [Dynamic blocks](4-terraform-advanced/5-dynamic-blocks/)
-
-### 5. Secret management
-- [Azure Key Vault integration](5-secret-management-azure/)
-
-### 6. Modules
-- [Build reusable modules](6-terraform-modules/)
-
-### 7. AzAPI provider
-- [Use preview Azure features](7-terraform-azapi/)
-
-### 8. Testing
-- [Validate and test your code](8-terraform-testing/)
-
-### 9. Import resources
-- [Bring existing resources under management](9-terraform-import/)
-
-### 10. State management commands
-- [Manipulate state safely](10-state-management-commands/)
-
-### 11. Pre-conditions and post-conditions
-- [Validate configurations with lifecycle rules](11-preconditions-postconditions/)
-
-### 12. Terraform functions
-- [Master built-in functions for Azure](12-terraform-functions/)
-
-### 13. Terraform MCP server
-- [AI-assisted Terraform development](13-terraform-mcp-server/)
-
-## How to use this repository
-
-**Start at section 1** and work through sequentially. Each section builds on previous concepts.
-
-**Run the examples:** Every section includes working code. Deploy it, examine it, modify it, then destroy it.
-
-**Clean up after each section:** Run `terraform destroy` after completing each tutorial to avoid Azure charges.
-
-**Use the scripts:** Section 3 includes shell scripts for setting up remote state storage. Make them executable with `chmod +x`.
-
-## Repository structure
-
-```
-├── 1-terraform-basics/
-│   ├── 1-terraform-installation/
-│   ├── 2-terraform-commands/
-│   ├── 3-terraform-resources/
-│   └── 4-terraform-azure-provider/
-├── 2-terraform-variables/
-├── 3-terraform-state/
-│   ├── local-state-example/
-│   ├── remote-state-example/
-│   └── scripts/
-├── 4-terraform-advanced/
-│   ├── 1-depends-on/
-│   ├── 2-for-each/
-│   ├── 3-count/
-│   ├── 4-conditional-expressions/
-│   └── 5-dynamic-blocks/
-├── 5-secret-management-azure/
-├── 6-terraform-modules/
-├── 7-terraform-azapi/
-├── 8-terraform-testing/
-├── 9-terraform-import/
-├── 10-state-management-commands/
-├── 11-preconditions-postconditions/
-├── 12-terraform-functions/
-└── 13-terraform-mcp-server/
-```
-
-## Quick start
-
-### How the tutorials are organized
-
-Sections are numbered **1- through 13-** to guide you through a learning path:
-
-- **1-terraform-basics/** - Installation, setup, and first deployment
-- **2-terraform-variables/** - Making code reusable
-- **3-terraform-state/** - Understanding state management
-- **4-terraform-advanced/** - Loops, conditionals, and dependencies
-- ...and so on through **13-terraform-mcp-server/**
-
-Each section folder contains:
-- `README.md` - Overview and links to tutorials
-- Numbered markdown files (e.g., `1-terraform-install.md`)
-- `examples/` or `terraform/` folders with working code
-
-**Work through sections in order.** Each builds on concepts from previous sections.
-
-### Get started now
+## Get started
 
 ```bash
-# 1. Clone this repository
+# Clone the repository
 git clone https://github.com/thomast1906/terraform-on-azure.git
 cd terraform-on-azure
 
-# 2. Start with section 1
-cd 1-terraform-basics
-
-# 3. Follow the README to install Terraform and configure your environment
+# Start with lesson 01
+cd 01-introduction
 ```
-
-Section 1 covers installing Terraform, setting up VS Code, authenticating to Azure, and deploying a first resource group.
-
-Section 3 adds remote state. Section 13 covers AI assistance for Terraform.
-
-**Start here:** [1. Terraform basics](1-terraform-basics/) →
 
 ## Get help
 
-- **Issues:** Found a problem or have a suggestion? [Open an issue](https://github.com/thomast1906/terraform-on-azure/issues)
-- **Questions:** Stuck on something? Open a discussion or issue
+- Issues: [Report bugs or request features](https://github.com/thomast1906/terraform-on-azure/issues)
+- Discussions: Ask questions and share your experience
 
 ## Contributing
 
-Want to add a tutorial or fix something? Contributions welcome! Open a pull request with your changes.
+Contributions welcome! Open a pull request to:
+- Fix errors or typos
+- Improve explanations
+- Add new examples
+- Suggest new lessons
 
-## Azure costs
+## License
 
-Most examples use free or low-cost resources. Always run `terraform destroy` when done to avoid charges.
-
-## What's new
-
-**February 2026 updates:**
-- Refreshed all content to latest Terraform and Azure provider versions
-- Added Terraform MCP server integration guide
-- New testing approaches section with terraform test framework
-- Terraform import tutorial for existing resources
-- Pre-conditions and post-conditions for validation
-- Terraform functions guide with Azure examples
-- State management commands (terraform state mv)
-- Rewrote all tutorials in step-by-step format
-- Updated examples to match current provider behavior
-
-## Next steps
-
-Ready to begin? Start with [section 1: Terraform basics](1-terraform-basics/).
-
-
-
+This course is provided for educational purposes.
