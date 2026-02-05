@@ -8,9 +8,9 @@ This course teaches Terraform on Azure step by step. Each lesson builds on the p
 - Each lesson has a `README.md` with the steps.
 - Examples live in `examples/` or `terraform/` under the lesson.
 
-Use the summary to jump to any lesson:
+Use the course outline to jump to any lesson:
 
-- [Course summary](../SUMMARY.md)
+- [Course README](../README.md)
 
 ## What you will build
 

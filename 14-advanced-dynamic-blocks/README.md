@@ -152,7 +152,7 @@ Use dynamic blocks when:
 
 Don't use dynamic blocks when:
 - You have a fixed, small number of blocks (explicit blocks are clearer)
-- The blocks are significantly different from each other
+- The blocks differ substantially from each other
 - It makes the code harder to read
 
 ## Try it yourself

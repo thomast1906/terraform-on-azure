@@ -4,10 +4,10 @@ Get real-time Terraform provider documentation, module details, and registry inf
 
 ## What you get
 
-- **Provider docs**: Latest versions, capabilities, and resource examples
-- **Module search**: Find and inspect public/private modules
-- **Current info**: Always up-to-date from the live registry
-- **In-editor**: No context switching to browsers
+- Provider docs: latest versions, capabilities, and resource examples
+- Module search: find and inspect public/private modules
+- Current info: always up-to-date from the live registry
+- In-editor: no context switching to browsers
 
 ## Setup
 
