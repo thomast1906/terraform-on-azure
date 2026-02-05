@@ -32,6 +32,8 @@ The script creates:
 
 The script outputs the values you'll need for your backend configuration.
 
+> **Important**: Keep this storage account! You will use it throughout the remaining lessons in this course. Every example from lesson 10 onwards references this same storage account for remote state. Do not delete it until you've completed all lessons.
+
 ## Configure remote backend
 
 Navigate to the remote state example:
@@ -141,7 +143,7 @@ The second command waits or fails with a lock error. This prevents concurrent mo
 
 ## Clean up
 
-Destroy the resource:
+To clean up the demo resource group created in this lesson:
 
 ```bash
 terraform destroy
@@ -149,16 +151,45 @@ terraform destroy
 
 The state file remains in Azure Storage but shows zero resources.
 
-## Delete the storage account
+> **Note**: Do NOT delete the storage account yet if you plan to continue with the remaining lessons. See the "Reusing the Storage Account" section below.
 
-When you're done, delete the storage account:
+## Reusing the storage account
+
+**Keep your storage account for the rest of the course.** All subsequent lessons (10-17) use this same storage account for remote state.
+
+Each lesson uses a different container name within the same storage account:
+- Lesson 10 (Dependencies): `dependson`
+- Lesson 11 (For Each): `foreach`
+- Lesson 12 (Count): `count`
+- Lesson 13 (Conditionals): `conditional`
+- Lesson 14 (Dynamic Blocks): `dynamicblocks`
+- Lesson 15 (Secret Management): `keyvault`
+- Lesson 16 (Modules): `modules`
+- Lesson 17 (AzAPI): `azapi`
+
+This approach:
+- Demonstrates real-world usage where teams share a single state storage account
+- Keeps costs minimal by using one storage account
+- Organizes state files logically by container
+- Shows how multiple projects can coexist in the same backend
+
+Update the `storage_account_name` in each lesson's `providers.tf` file with your actual storage account name created in this lesson.
+
+## Final cleanup
+
+When you've completed all lessons in the course, delete the storage account:
 
 ```bash
-cd ../scripts
+cd scripts
 ./2-delete-terraform-storage.sh
 ```
 
 Update the script variables to match your resource group name before running.
+
+This removes:
+- The storage account
+- All state containers and files
+- The `rg-terraform-state` resource group
 
 ## Key takeaways
 

@@ -3,8 +3,8 @@
 
 # Creates the relevant storage account to store terraform state locally
 
-RESOURCE_GROUP_NAME="deploy-first-rg"
-STORAGE_ACCOUNT_NAME="deployfirsttamopssa"
+RESOURCE_GROUP_NAME="rg-terraform-state"
+STORAGE_ACCOUNT_NAME="sttfstate${RANDOM}"
 
 # Create Resource Group
 az group create -l uksouth -n $RESOURCE_GROUP_NAME

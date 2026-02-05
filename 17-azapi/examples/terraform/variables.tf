@@ -1,7 +1,7 @@
 variable "resource_group_name" {
   type        = string
   description = "The name of the resource group in which to create the container registry."
-  default     = "tamopsrg"
+  default     = "rg-demo-azapi"
 }
 
 variable "location" {
@@ -13,5 +13,5 @@ variable "location" {
 variable "acr_name" {
   type        = string
   description = "The name of the container registry."
-  default     = "tamopsacr"
+  default     = "acrdemoazapi"
 }

@@ -41,6 +41,9 @@ Begin with [Lesson 01: Introduction](01-introduction/)
 - [22. Terraform functions](22-functions/) - Transform and manipulate data
 - [23. Terraform MCP server](23-mcp-server/) - Use AI assistance with Terraform
 
+### Course Completion
+- [24. Cleanup](24-cleanup/) - Remove all Azure resources and avoid charges
+
 ## What you will learn
 
 - Terraform fundamentals: core concepts, workflow, and Azure provider
@@ -58,10 +61,11 @@ Begin with [Lesson 01: Introduction](01-introduction/)
 
 ## How the course is structured
 
-- 23 progressive lessons from basics to advanced topics
+- 24 progressive lessons from basics to advanced topics and cleanup
 - Each lesson has a `README.md` with explanations and steps
 - Hands-on examples in `examples/` directories with working Terraform code
 - Examples use azurerm 4.0+ with latest provider features
+- Lesson 24 provides scripts to clean up all resources and avoid charges
 
 ## Get started
 

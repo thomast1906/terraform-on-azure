@@ -1,7 +1,7 @@
 terraform {
   backend "azurerm" {
-    resource_group_name  = "deploy-first-rg"
-    storage_account_name = "deployfirsttamopssa"
+    resource_group_name  = "rg-terraform-state"
+    storage_account_name = "YOUR_STORAGE_ACCOUNT_NAME" # Replace with the storage account name created in lesson 9
     container_name       = "acr"
     key                  = "terraform.tfstate"
   }
