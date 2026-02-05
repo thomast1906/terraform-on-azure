@@ -15,8 +15,8 @@ resource "azurerm_storage_account" "test" {
   account_tier             = var.environment == "prod" ? "Premium" : "Standard"
   account_replication_type = var.environment == "prod" ? "GRS" : "LRS"
   
-  enable_https_traffic_only = true
-  min_tls_version          = "TLS1_2"
+  https_traffic_only_enabled = true
+  min_tls_version           = "TLS1_2"
   
   tags = azurerm_resource_group.test.tags
 }

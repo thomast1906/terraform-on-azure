@@ -1,9 +1,16 @@
 variable "resource_group_name" {
-  type = string
-  default = "tamopsrg"
+  description = "Name of the resource group"
+  type        = string
+  default     = "rg-demo"
 }
 
-variable "create_resource_group" {
-  type = bool
-  default = false
+variable "environment" {
+  description = "Environment name"
+  type        = string
+  default     = "dev"
+  
+  validation {
+    condition     = contains(["dev", "staging", "prod"], var.environment)
+    error_message = "Environment must be dev, staging, or prod."
+  }
 }

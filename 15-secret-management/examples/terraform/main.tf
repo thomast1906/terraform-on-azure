@@ -6,37 +6,38 @@ resource "azurerm_resource_group" "rg" {
 }
 
 resource "azurerm_key_vault" "kv" {
-  name                = "tamopskv"
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
-  tenant_id           = data.azurerm_client_config.current.tenant_id
-  sku_name            = "standard"
+  name                       = "tamopskv"
+  location                   = azurerm_resource_group.rg.location
+  resource_group_name        = azurerm_resource_group.rg.name
+  tenant_id                  = data.azurerm_client_config.current.tenant_id
+  sku_name                   = "standard"
+  purge_protection_enabled   = true
+  soft_delete_retention_days = 7
 
-  access_policy {
-    tenant_id = data.azurerm_client_config.current.tenant_id
-    object_id = data.azurerm_client_config.current.object_id
+  # Use RBAC for access control (recommended in azurerm 4.0+)
+  rbac_authorization_enabled = true
+}
 
-    secret_permissions = [
-      "Get",
-      "List",
-      "Set",
-      "Delete"
-    ]
-  }
+# Assign Key Vault Secrets Officer role
+resource "azurerm_role_assignment" "kv_secrets_officer" {
+  scope                = azurerm_key_vault.kv.id
+  role_definition_name = "Key Vault Secrets Officer"
+  principal_id         = data.azurerm_client_config.current.object_id
 }
 
 resource "azurerm_key_vault_secret" "sa" {
   name         = "saname"
   value        = "tamopsstoragekv"
   key_vault_id = azurerm_key_vault.kv.id
+  
+  depends_on = [azurerm_role_assignment.kv_secrets_officer]
 }
 
 data "azurerm_key_vault_secret" "sa" {
   name         = "saname"
   key_vault_id = azurerm_key_vault.kv.id
-  depends_on = [
-    azurerm_key_vault_secret.sa
-  ]
+  
+  depends_on = [azurerm_key_vault_secret.sa]
 }
 
 resource "azurerm_storage_account" "sa" {

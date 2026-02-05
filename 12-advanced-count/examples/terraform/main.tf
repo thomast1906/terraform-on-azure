@@ -1,5 +1,9 @@
 resource "azurerm_resource_group" "rg" {
-  count    = length(var.resource_group_names)
-  name     = var.resource_group_names[count.index]
+  count    = 3
+  name     = "rg-demo-${count.index}"
   location = "uksouth"
+  
+  tags = {
+    Index = count.index
+  }
 }

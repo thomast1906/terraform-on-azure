@@ -59,7 +59,7 @@ run "test_security_settings" {
   }
 
   assert {
-    condition     = azurerm_storage_account.test.enable_https_traffic_only == true
+    condition     = azurerm_storage_account.test.https_traffic_only_enabled == true
     error_message = "HTTPS traffic should be enforced"
   }
 
